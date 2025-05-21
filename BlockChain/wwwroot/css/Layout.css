@@ -1,0 +1,74 @@
+﻿/* Layout dasar */
+html, body {
+    height: 100%;
+    margin: 0;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+/* Navbar */
+.custom-navbar {
+    background-color: #B99A81 !important;
+    border-bottom: 2px solid #A67B5B;
+    padding: 10px 0;
+}
+
+/* Link navbar */
+.nav-link {
+    font-weight: bold !important;
+    color: white !important;
+    padding: 8px 15px;
+}
+
+/* Konten utama */
+.main-content {
+    flex: 1 0 auto;
+    padding-bottom: 60px;
+}
+
+/* Footer */
+.custom-footer {
+    flex-shrink: 0;
+    background-color: #B99A81 !important;
+    color: #fff !important;
+    padding: 15px 0;
+    text-align: center;
+    width: 100%;
+}
+
+/* Mobile (<768px) */
+@media (max-width: 768px) {
+    .navbar-nav {
+        flex-direction: column !important;
+        align-items: flex-start;
+        gap: 10px;
+        margin-top: 10px;
+        width: 100%;
+    }
+
+    .navbar-brand img {
+        width: 60px;
+        height: auto;
+    }
+
+    .nav-link {
+        width: 100%;
+        text-align: left;
+        padding: 10px 0;
+    }
+
+    .custom-footer {
+        font-size: 14px;
+        padding: 10px;
+    }
+}
+
+/* Desktop (≥768px): jarak antar menu */
+@media (min-width: 769px) {
+    .navbar-nav {
+        gap: 20px;
+    }
+}

@@ -1,0 +1,170 @@
+﻿body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #B99A81;
+    color: white;
+}
+
+.dashboard-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+
+.sidebar {
+    position: fixed;
+    width: 180px;
+    background-color: #EDE8D5;
+    padding: 0px 20px 20px 20px; /* Menambah padding atas */
+    height: 100vh;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    transition: left 0.3s ease;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+
+    .sidebar .logo img {
+        width: 70%;
+        margin-bottom: 0px; /* Meningkatkan jarak bawah logo */
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+.nav-links a:hover {
+    background-color: #D6CDBB;
+    color: #5c3b24;
+    transform: scale(1.03);
+}
+
+.nav-links a.active {
+    background-color: #5c3b24;
+    color: white;
+}
+
+.nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+    .nav-links li {
+        margin-bottom: 15px;
+    }
+
+    .nav-links a {
+        text-decoration: none;
+        gap: 10px;
+        color: #2e1d0e;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+
+    .nav-links i {
+        font-size: 18px;
+        width: 20px;
+        text-align: center;
+    }
+
+.main-content {
+    margin-left: 220px;
+    padding: 30px;
+    background-color: #B99A81;
+    color: black;
+    flex: 1;
+    overflow: auto; /* Menambahkan overflow untuk scroll */
+}
+
+.title {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: white;
+}
+
+/* Notifikasi Styles */
+.notification-container {
+    background-color: #F5F1E3;
+    border-radius: 10px;
+    padding: 30px;
+    color: #7a3e2c;
+}
+
+    .notification-container hr {
+        border-top: 1px solid #e0d6c0;
+        margin-bottom: 20px;
+    }
+
+.notification-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.notification-left {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+}
+
+.date-box {
+    background-color: white;
+    color: #5c3b24;
+    border-radius: 6px;
+    padding: 5px 10px;
+    text-align: center;
+    font-weight: bold;
+    min-width: 50px;
+}
+
+.notification-button {
+    padding: 6px 12px;
+    background-color: white;
+    color: #5c3b24;
+    border: none;
+    border-radius: 5px;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+    .notification-button:hover {
+        background-color: #e0d6c0;
+    }
+
+/* Responsive untuk Mobile */
+@media (max-width: 768px) {
+    .dashboard-wrapper {
+        flex-direction: column;
+    }
+
+    .sidebar {
+        width: 100%;
+        position: relative;
+        height: auto;
+    }
+
+    .main-content {
+        margin-left: 0;
+        padding: 20px;
+    }
+
+    .nav-links {
+        flex-direction: column;
+        gap: 10px;
+    }
+
+        .nav-links a {
+            padding: 10px 15px;
+            background-color: #fff3e0;
+            font-size: 14px;
+        }
+}

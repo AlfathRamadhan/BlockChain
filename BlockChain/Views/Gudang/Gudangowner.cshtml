@@ -1,0 +1,155 @@
+﻿@model List<BlockChain.Models.Produk>
+@{
+    Layout = null;
+    var no = 1;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Gudang</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/ownergudang.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <partial name="Sidebar" />
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Gudang</h2>
+            <div class="table-section">
+                <h3>Data Barang Gudang</h3>
+                <div class="table-container">
+                    <div class="filter-bar">
+                        <form method="get" asp-controller="Gudang" asp-action="Gudangowner" class="search-form">
+                            <div class="search-form">
+                                <div class="search-wrapper">
+                                    <i class="fa fa-search search-icon"></i>
+                                    <input type="text" id="searchInput" name="search" placeholder="Pencarian Produk..." class="search-input" />
+                                </div>
+                            </div>
+                            <div class="filter-wrapper">
+                                <select name="filterStok" class="stok-filter" onchange="this.form.submit()" id="filterStok">
+                                    <option value="">Filter Stok</option>
+                                    <option value="habis">Stok Mau Habis</option>
+                                    <option value="banyak">Stok Masih Banyak</option>
+                                </select>
+                            </div>
+                            <div class="filter-wrapper">
+                                <button type="button" class="date-filter" onclick="toggleDropdown()">
+                                    <i class="fa fa-calendar"></i> Urutkan Tanggal
+                                </button>
+                                <div id="dropdownOptions" class="dropdown-options" style="display:none;">
+                                    <button type="button" name="sortDate" data-sort="terbaru">Terbaru</button>
+                                    <button type="button" name="sortDate" data-sort="terlama">Terlama</button>
+                                </div>
+                            </div>
+                        </form>
+                    </div>
+                    <table class="transaction-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Kode Produk</th>
+                                <th>Nama Produk</th>
+                                <th>Stok</th>
+                                <th>Tanggal Masuk</th>
+                                <th>Tanggal Expired</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produkBody">
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@no</td>
+                                    <td>@item.KodeProduk</td>
+                                    <td>@item.Nama</td>
+                                    <td>@item.Stok</td>
+                                    <td>@item.TanggalMasuk.ToString("dd MMMM yyyy")</td>
+                                    <td>@item.TanggalExpired.ToString("dd MMMM yyyy")</td>
+                                    <td><a href="#"><i class="fas fa-external-link-alt"></i></a></td>
+                                </tr>
+                                no++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            let currentSortDate = "";
+
+            function formatTanggal(tanggal) {
+                const tgl = new Date(tanggal);
+                const options = { day: '2-digit', month: 'long', year: 'numeric' };
+                return tgl.toLocaleDateString('id-ID', options);
+            }
+
+            function loadProduk() {
+                const search = $('#searchInput').val();
+                const filterStok = $('#filterStok').val();
+                const sortDate = currentSortDate;
+
+                $.get('/Gudang/Gudangowner', {
+                    search: search,
+                    filterStok: filterStok,
+                    sortDate: sortDate
+                }, function (data) {
+                    let rows = '';
+                    let no = 1;
+                    data.forEach(function (item) {
+                        rows += `
+                            <tr>
+                                <td>${no++}</td>
+                                <td>${item.kodeProduk}</td>
+                                <td>${item.nama}</td>
+                                <td>${item.stok}</td>
+                                <td>${formatTanggal(item.tanggalMasuk)}</td>
+                                <td>${formatTanggal(item.tanggalExpired)}</td>
+                                <td><a href="#"><i class="fas fa-external-link-alt"></i></a></td>
+                            </tr>`;
+                    });
+                    $('#produkBody').html(rows);
+                });
+            }
+
+            function debounce(func, delay) {
+                let timeout;
+                return function () {
+                    clearTimeout(timeout);
+                    timeout = setTimeout(func, delay);
+                };
+            }
+
+            // Pencarian langsung saat mengetik
+            $('#searchInput').on('input', debounce(function () {
+                loadProduk();
+            }, 300));
+
+            // Filter stok dropdown
+            $('#filterStok').on('change', function () {
+                loadProduk();
+            });
+
+            // Toggle dropdown tanggal
+            window.toggleDropdown = function () {
+                $('#dropdownOptions').toggle();
+            };
+
+            // Klik tombol sort tanggal
+            $(document).on('click', '#dropdownOptions button', function () {
+                currentSortDate = $(this).data('sort');
+                loadProduk();
+                $('#dropdownOptions').hide();
+            });
+
+        });
+    </script>
+
+</body>
+</html>

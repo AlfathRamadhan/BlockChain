@@ -1,0 +1,259 @@
+﻿@model List<BlockChain.Models.Produk>
+@{
+    Layout = null;
+    var no = 1;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Gudang</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/datagudang.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/sidebargudang.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+</head>
+<body>
+    <partial name="_SidebarGudang" />
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Gudang</h2>
+            <div class="table-section">
+                <div class="table-header">
+                    <h3>Data Barang Gudang</h3>
+                    <button class="add-button" onclick="openModal()">+ Tambah Barang</button>
+                </div>
+
+                <div class="table-container">
+                    <div class="filter-bar">
+                        <form method="get" asp-controller="DataGudang" asp-action="Index" class="search-form">
+                            <div class="search-wrapper">
+                                <i class="fa fa-search search-icon"></i>
+                                <input type="text" id="searchInput" placeholder="Pencarian Produk..." class="search-input" />
+                            </div>
+                        </form>
+
+                        <!-- Filter area moved to the right -->
+                        <div class="filter-right">
+                            <form method="get" asp-controller="DataGudang" asp-action="Index" class="search-form">
+                                <div class="filter-wrapper">
+                                    <select name="filterStok" class="stok-filter" onchange="this.form.submit()">
+                                        <option value="">Filter Stok</option>
+                                        <option value="habis">Stok Mau Habis</option>
+                                        <option value="banyak">Stok Masih Banyak</option>
+                                    </select>
+                                </div>
+                                <div class="filter-wrapper">
+                                    <button type="button" class="date-filter" onclick="toggleDropdown()">
+                                        <i class="fa fa-calendar"></i> Urutkan Tanggal
+                                    </button>
+                                    <div id="dropdownOptions" class="dropdown-options" style="display:none;">
+                                        <button type="submit" name="sortDate" value="terbaru">Terbaru</button>
+                                        <button type="submit" name="sortDate" value="terlama">Terlama</button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <table class="transaction-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Kode Produk</th>
+                                <th>Nama Produk</th>
+                                <th>Stok</th>
+                                <th>Tanggal Masuk</th>
+                                <th>Tanggal Expired</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produkTableBody">
+                            @foreach (var item in Model)
+                            {
+                                <tr id="row-@item.Id">
+                                    <td>@no</td>
+                                    <td>@item.KodeProduk</td>
+                                    <td>@item.Nama</td>
+                                    <td>@item.Stok</td>
+                                    <td>@item.TanggalMasuk.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</td>
+                                    <td>@item.TanggalExpired.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</td>
+                                    <td>
+                                        <button class="delete-button" onclick="confirmDelete(@item.Id)">
+                                            <i class="fa-solid fa-trash-can" style="color: inherit;"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                no++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Modal Tambah Barang -->
+    <div id="tambahModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Tambah Barang</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form method="post" action="/DataGudang/Tambah">
+                <div class="form-group">
+                    <input type="hidden" name="KodeProduk" id="kodeProdukInput" />
+                </div>
+                <div class="form-group">
+                    <label>Nama Produk</label>
+                    <input type="text" name="Nama" required />
+                </div>
+                <div class="form-group">
+                    <label>Stok</label>
+                    <input type="number" name="Stok" required />
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Masuk</label>
+                    <input type="date" name="TanggalMasuk" required />
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Expired</label>
+                    <input type="date" name="TanggalExpired" required />
+                </div>
+                <button type="submit" class="save-button">Simpan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Konfirmasi Hapus Pengguna -->
+    <div class="modal" id="confirmDeleteModal">
+        <div class="modal-content">
+            <p>Apakah Anda yakin ingin menghapus pengguna ini?</p>
+            <button onclick="deleteConfirmed()" class="confirm-delete">Ya</button>
+            <button onclick="closeDeleteConfirmModal()" class="cancel-delete">Batal</button>
+        </div>
+    </div>
+
+    <script>
+        // Fungsi untuk membuka modal
+        function openModal() {
+            console.log("Modal dibuka"); // Debugging untuk memastikan modal dibuka
+            document.getElementById("tambahModal").style.display = "block";
+
+            // Set kode produk otomatis saat modal dibuka
+            const kodeInput = document.getElementById("kodeProdukInput");
+            if (kodeInput) {
+                kodeInput.value = generateKodeProduk();
+            }
+        }
+
+        // Fungsi untuk menutup modal
+        function closeModal() {
+            document.getElementById("tambahModal").style.display = "none";
+        }
+
+        // Fungsi untuk menangani klik di luar modal untuk menutupnya
+        window.onclick = function(event) {
+            var modal = document.getElementById("tambahModal");
+            if (event.target === modal) {
+                modal.style.display = "none";
+            }
+
+            // Menutup dropdown jika klik di luar dropdown
+            if (!event.target.matches('.date-filter')) {
+                var dropdown = document.getElementById("dropdownOptions");
+                if (dropdown && dropdown.style.display === "block") {
+                    dropdown.style.display = "none";
+                }
+            }
+        }
+
+        // Fungsi untuk toggle dropdown tanggal
+        function toggleDropdown() {
+            const dropdown = document.getElementById("dropdownOptions");
+            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
+        }
+
+        // Pencarian produk dengan input
+        const searchInput = document.getElementById("searchInput");
+        const tableBody = document.getElementById("produkTableBody");
+
+        searchInput.addEventListener("input", function () {
+            const term = this.value;
+
+            fetch(`/DataGudang/SearchJson?term=${encodeURIComponent(term)}`)
+                .then(response => response.json())
+                .then(data => {
+                    tableBody.innerHTML = ""; // Kosongkan tabel
+
+                    data.forEach((item, index) => {
+                        const row = `<tr>
+                            <td>${index + 1}</td>
+                            <td>${item.kodeProduk}</td>
+                            <td>${item.nama}</td>
+                            <td>${item.stok}</td>
+                            <td>${item.tanggalMasuk}</td>
+                            <td>${item.tanggalExpired}</td>
+                            <td><a href="#"><i class="fas fa-external-link-alt"></i></a></td>
+                        </tr>`;
+                        tableBody.insertAdjacentHTML("beforeend", row);
+                    });
+                });
+        });
+
+        // Fungsi untuk menghasilkan kode produk otomatis
+        function generateKodeProduk() {
+            const timestamp = Date.now().toString().slice(-6); // Ambil 6 digit akhir timestamp
+            const random = Math.floor(100 + Math.random() * 900); // 3 digit random
+            return `PRD-${timestamp}${random}`;
+        }
+        let deleteId = 0;
+
+        function confirmDelete(id) {
+            deleteId = id;  // Menyimpan ID produk yang akan dihapus
+            document.getElementById("confirmDeleteModal").style.display = "block";  // Tampilkan modal konfirmasi
+        }
+
+               function deleteConfirmed() {
+            console.log('Menghapus produk dengan ID: ' + deleteId);
+
+            fetch(`/DataGudang/Hapus?id=${deleteId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({ id: deleteId })
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    console.log('Produk berhasil dihapus');
+
+                    // Hapus baris produk di DOM
+                    const row = document.getElementById(`row-${deleteId}`);
+                    if (row) {
+                        row.remove();
+                    }
+
+                    // Tutup modal konfirmasi
+                    closeDeleteConfirmModal();
+                } else {
+                    alert("Gagal menghapus produk: " + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert("Terjadi kesalahan saat menghapus produk");
+            });
+        }
+
+        // Function to close delete confirmation modal
+        function closeDeleteConfirmModal() {
+            document.getElementById("confirmDeleteModal").style.display = "none";
+        }
+
+    </script>
+</body>
+</html>

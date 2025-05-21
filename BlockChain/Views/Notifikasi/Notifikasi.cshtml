@@ -1,0 +1,49 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Notifikasi - Cookies</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/ownernotifikasi.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    @Html.Partial("Sidebar")
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Notifikasi</h2>
+
+            <div class="notification-container">
+                <hr />
+
+                <div class="notification-item">
+                    <div class="notification-left">
+                        <div class="date-box">
+                            <div>4</div>
+                            <div>Sen</div>
+                        </div>
+                        <span>Pelacakan Produk 6544246890</span>
+                    </div>
+                    <button class="notification-button">Cek Status</button>
+                </div>
+
+                <div class="notification-item">
+                    <div class="notification-left">
+                        <div class="date-box">
+                            <div>4</div>
+                            <div>Sen</div>
+                        </div>
+                        <span>Permintaan Verifikasi Pendaftaran Distributor</span>
+                    </div>
+                    <button class="notification-button">Cek Status</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,74 @@
+﻿@model IEnumerable<BlockChain.Models.User>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Distributor - Cookies</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/ownerdistributor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    <partial name="Sidebar" />
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Distributor</h2>
+
+            <div class="table-section">
+                <div class="table-container">
+                    <div class="filter-bar">
+                        <div class="search-wrapper">
+                            <i class="fa fa-search search-icon"></i>
+                            <input type="text" id="searchInput" placeholder="Pencarian" class="search-input" />
+                        </div>
+                    </div>
+                    <table class="transaction-table">
+                        <thead>
+                            <tr>
+                                <th>Nama Toko</th>
+                                <th>Username</th>
+                                <th>Email</th>
+                                <th>Kategori</th>
+                                <th>Action</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var distributor in Model)
+                            {
+                                <tr>
+                                    <td>@distributor.NamaToko</td>
+                                    <td>@distributor.Username</td>
+                                    <td>@distributor.Email</td>
+                                    <td>@distributor.Kategori</td>
+                                    <td>
+                                        <button class="detail-button" disabled>Detail</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // JavaScript untuk pencarian dinamis
+        document.getElementById('searchInput').addEventListener('input', function (e) {
+            const searchValue = e.target.value.toLowerCase();
+            const rows = document.querySelectorAll('.transaction-table tbody tr');
+            rows.forEach(row => {
+                const cells = row.getElementsByTagName('td');
+                const match = Array.from(cells).some(cell => cell.textContent.toLowerCase().includes(searchValue));
+                row.style.display = match ? '' : 'none';
+            });
+        });
+    </script>
+</body>
+</html>

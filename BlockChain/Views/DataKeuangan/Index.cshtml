@@ -1,0 +1,218 @@
+﻿@model IEnumerable<BlockChain.Models.TransaksiKeuangan>
+
+@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Keuangan - Cookies</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/datakeuangan.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    <partial name="_SidebarKeuangan" />
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Histori Transaksi Keuangan</h2>
+            <div class="table-section">
+                <div class="table-container">
+                    <div class="filter-bar">
+                        <div class="search-wrapper">
+                            <i class="fa fa-search search-icon"></i>
+                            <input type="text" placeholder="Cari transaksi" class="search-input" />
+                        </div>
+                        <button class="date-filter"><i class="fa fa-calendar"></i> Pilih Tanggal</button>
+                    </div>
+                    <table class="transaction-table">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Supplier</th>
+                                <th>Tanggal</th>
+                                <th>Sub Total (Rp)</th>
+                                <th>Status</th>
+                                <th>Invoice</th>
+                                <th>Bukti Pembayaran</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var transaksi in Model)
+                            {
+                                <tr>
+                                    <td>@transaksi.ID</td>
+                                    <td>@transaksi.Supplier</td>
+                                    <td>@transaksi.Tanggal.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</td>
+                                    <td>@transaksi.Jumlah.ToString("N0")</td>
+                                    <td>
+                                        @{
+                                            var status = transaksi.Status?.ToLower();
+                                            var warna = "";
+                                            var label = transaksi.Status;
+
+                                            if (status == "sudah dibayar")
+                                            {
+                                                warna = "#2ecc71"; // Hijau
+                                            }
+                                            else if (status == "belum dibayar")
+                                            {
+                                                warna = "#f1c40f"; // Kuning
+                                            }
+                                            else if (status == "gagal")
+                                            {
+                                                warna = "#e74c3c"; // Merah
+                                            }
+                                        }
+
+                                        @if (!string.IsNullOrWhiteSpace(warna))
+                                        {
+                                            <span style="background-color:@(warna ?? "#999"); color:white; padding:5px 10px; border-radius:10px;">@label</span>
+                                        }
+                                        else
+                                        {
+                                            <span style="color:#333;">@label</span>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button type="button" class="invoice-button" title="Lihat Invoice" onclick="openInvoice(@transaksi.ID)">
+                                            <i class="fa fa-file-invoice"></i>
+                                        </button>
+                                    </td>
+                                    <td>
+                                        <form asp-action="UploadBuktiPembayaran" asp-controller="DataKeuangan" method="post" enctype="multipart/form-data">
+                                            <input type="hidden" name="transaksiId" value="@transaksi.ID" />
+                                            <label class="upload-label">
+                                                <i class="fa fa-upload"></i>
+                                                <input type="file" name="buktiPembayaran" class="upload-input" onchange="this.form.submit()" />
+                                            </label>
+                                        </form>
+                                    </td>
+                                </tr>
+
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+            <div id="invoiceModal" class="invoice-modal">
+                <div class="invoice-modal-content">
+                    <span class="close-modal" onclick="closeInvoiceModal()">&times;</span>
+                    <div id="invoiceContent">
+                        <!-- Konten akan diisi oleh JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function openInvoice(id) {
+            fetch(`/DataKeuangan/GetInvoiceById?id=${id}`)
+                .then(res => res.json())
+                .then(data => {
+                    const html = `
+                        <h2><i class="fa fa-file-invoice"></i> Detail Pesanan</h2>
+                        <p>Dibuat pada ${formatTanggalIndonesia(data.Tanggal)}</p>
+                        <div style="display: flex; justify-content: space-between;">
+                            <div>
+                                <strong>Informasi Pelanggan</strong><br />
+                                ${data.Supplier}<br />
+                                Jl. Contoh Alamat, Bengkong<br />
+                                08123456789
+                            </div>
+                            <div>
+                                <strong>Informasi Pesanan</strong><br />
+                                Pembayaran: ${data.MetodePembayaran}<br />
+                                No. Pembayaran: ${data.NomorPembayaran}<br />
+                                Status: <span style="color:${getStatusColor(data.Status)}; font-weight:bold;">${data.Status}</span>
+                            </div>
+                        </div>
+                        <h3 style="color:white; font-weight:bold; margin-bottom: 10px;">Item Pesanan</h3>
+                        <div style="padding: 0 20px;">
+                            <table style="width:100%; max-width: 700px; margin: 0 auto; border-collapse:collapse; background-color: #EDE8D5; color:#333; border-radius: 5px; margin-bottom: 20px;">
+                                <thead>
+                                    <tr>
+                                        <th style="padding:10px; width:40px; text-align:center; ">No</th>
+                                        <th style="padding:10px;">Produk</th>
+                                        <th style="padding:10px;">Satuan</th>
+                                        <th style="padding:10px; width:40px; text-align:center; ">Jumlah</th>
+                                        <th style="padding:10px;">Harga</th>
+                                        <th style="padding:10px;">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td style="padding:10px; text-align:center; vertical-align:middle; ">1</td>
+                                        <td style="padding:10px; vertical-align:middle; ">${data.NamaProduk ?? '-'}</td>
+                                        <td style="padding:10px; vertical-align:middle; ">${data.Satuan ?? '-'}</td>
+                                        <td style="padding:10px; text-align:center; vertical-align:middle; ">${data.jumlahUnit ?? '1'}</td>
+                                        <td style="padding:10px;">${formatRupiah(data.HargaSatuan ?? data.Jumlah)}</td>
+                                        <td style="padding:10px;">${formatRupiah(data.Jumlah)}</td>
+                                    </tr>
+
+                                    <tr>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td></td>
+                                        <td style="padding:10px; text-align:center;" class="subtotal-label">Sub Total</td>
+                                        <td style="padding:10px; text-align:center; font-weight:bold;" class="subtotal-value">${formatRupiah(data.Jumlah)}</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 16px; padding: 0 20px;">
+                            <button class="btn-close" onclick="closeInvoiceModal()">
+                                <i class="fa fa-times"></i> Tutup
+                            </button>
+                            <button class="btn-print" onclick="printPDF(${data.Id})">
+                                <i class="fa fa-file-pdf"></i> Cetak PDF
+                            </button>
+                        </div>
+
+                    `;
+
+                    document.getElementById("invoiceContent").innerHTML = html;
+                    document.getElementById("invoiceModal").style.display = "flex";
+                });
+        }
+
+        function getStatusColor(status) {
+            const s = status?.toLowerCase();
+            if (s === "sudah dibayar" || s === "sudah dibayar") return "#2ecc71";
+            if (s === "belum dibayar") return "#f39c12"; // kuning agak gelap
+            if (s === "gagal") return "#e74c3c";
+            return "#6b4a2e"; // default coklat
+        }
+
+        function closeInvoiceModal() {
+            document.getElementById("invoiceModal").style.display = "none";
+        }
+
+                function printPDF(id) {
+            // Contoh: membuka halaman PDF di tab baru, sesuaikan URL sesuai kebutuhan backend Anda
+            window.open(`/Keuangan/PrintInvoicePDF?id=${id}`, '_blank');
+        }
+
+             function formatTanggalIndonesia(tanggalStr) {
+            const bulanIndo = [
+                "Januari", "Februari", "Maret", "April", "Mei", "Juni",
+                "Juli", "Agustus", "September", "Oktober", "November", "Desember"
+            ];
+            const date = new Date(tanggalStr);
+            const hari = date.getDate().toString().padStart(2, '0');
+            const bulan = bulanIndo[date.getMonth()];
+            const tahun = date.getFullYear();
+            return `${hari} ${bulan} ${tahun}`;
+        }
+
+                function formatRupiah(angka) {
+            return 'Rp ' + new Intl.NumberFormat('id-ID').format(angka);
+        }
+
+    </script>
+</body>
+</html>

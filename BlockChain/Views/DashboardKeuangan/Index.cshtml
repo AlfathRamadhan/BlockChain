@@ -1,0 +1,98 @@
+﻿@model List<BlockChain.Models.TransaksiKeuangan>
+
+@{
+    Layout = null;
+    int totalTransaksi = Model.Count;
+    decimal totalPembelian = Model.Sum(m => m.Jumlah);
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Keuangan</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/keuangandashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    <partial name="_SidebarKeuangan" />
+
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Dashboard</h2>
+
+            <div class="cards">
+                <div class="card-section">
+                    <h3>Total Transaksi</h3>
+                    <div class="card">
+                        <p class="desc">Total Transaksi Bulan Ini</p>
+                        <p class="count big">@totalTransaksi</p>
+                        <button class="btn-grafik" onclick="lihatGrafik('transaksi')">
+                            <i class="fas fa-chart-line"></i> <span>Lihat Grafik Transaksi</span>
+                        </button>
+                    </div>
+                </div>
+                <div class="card-section">
+                    <h3>Total Pembelian</h3>
+                    <div class="card">
+                        <p class="desc">Total Pembelian Bulan Ini (Rp)</p>
+                        <p class="count big">@totalPembelian.ToString("N0")</p>
+                        <button class="btn-grafik" onclick="lihatGrafik('pembelian')">
+                            <i class="fas fa-chart-bar"></i> <span>Lihat Grafik Pembelian</span>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-only-section">
+                <h3>Riwayat Pembelian</h3>
+                <div class="table-wrapper">
+                    <table class="status-table">
+                        <thead>
+                            <tr>
+                                <th>Nomor Pembayaran</th>
+                                <th>Supplier</th>
+                                <th>Tanggal</th>
+                                <th>Subtotal (Rp)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                var statusClass = item.Status.ToLower() switch
+                                {
+                                    "sudah dibayar" => "status green-bg",
+                                    "belum dibayar" => "status yellow-bg",
+                                    "gagal" => "status red-bg",
+                                    _ => "status"
+                                };
+                                <tr>
+                                    <td>@item.NomorPembayaran</td>
+                                    <td>@item.Supplier</td>
+                                    <td>@item.Tanggal.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</td>
+                                    <td>@item.Jumlah.ToString("N0")</td>
+                                    <td>
+                                        <span class="@statusClass">@item.Status</span>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        function lihatGrafik(tipe) {
+            alert("Menampilkan grafik untuk: " + tipe);
+            // Kamu bisa ganti dengan chart modal atau pindah ke halaman baru
+        }
+    </script>
+
+</body>
+</html>

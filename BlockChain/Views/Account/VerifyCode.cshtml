@@ -1,0 +1,77 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi Kode - Cookies</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true">
+    <link rel="stylesheet" href="~/css/verify-code.css" asp-append-version="true">
+</head>
+<body>
+    <div class="forgot-container">
+        <div class="forgot-card" style="width: 40%;">
+            <div class="forgot-right">
+                <h2 class="verify-title">VERIFIKASI KODE</h2>
+                <p class="verify-description">Masukkan 6 digit kode yang dikirim ke email kamu</p>
+
+                @if (ViewBag.Message != null)
+                {
+                    <p class="success-message">@ViewBag.Message</p>
+                }
+
+                <form method="post" asp-controller="Account" asp-action="VerifyCode">
+                    <div class="code-input-group">
+                        @for (int i = 0; i < 6; i++)
+                        {
+                            <input type="text" name="CodeDigit[@i]" maxlength="1" class="code-digit" required />
+                        }
+                    </div>
+
+                    <input type="hidden" name="code" id="codeInput" />
+                    <input type="hidden" name="Email" value="@ViewBag.Email" />
+
+                    <button type="submit" class="forgot-button">VERIFIKASI</button>
+
+                    <div class="back-to-login">
+                        <a href="/Account/Login">Kembali ke login</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const inputs = document.querySelectorAll('.code-digit');
+        const codeInput = document.getElementById('codeInput');
+
+        // Auto move to next/previous input
+        inputs.forEach((input, index) => {
+            input.addEventListener('input', () => {
+                if (input.value.length === 1 && index < inputs.length - 1) {
+                    inputs[index + 1].focus();
+                }
+            });
+
+            input.addEventListener('keydown', (e) => {
+                if (e.key === 'Backspace' && input.value === '' && index > 0) {
+                    inputs[index - 1].focus();
+                }
+            });
+        });
+
+        // Gabungkan 6 digit sebelum submit
+        document.querySelector('form').addEventListener('submit', function (e) {
+            let code = '';
+            inputs.forEach(input => {
+                code += input.value;
+            });
+            codeInput.value = code;
+        });
+    </script>
+
+</body>
+</html>

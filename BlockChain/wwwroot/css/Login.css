@@ -1,0 +1,280 @@
+﻿/* Background */
+body {
+    font-family: Arial, sans-serif;
+    background-color: #B99A81; /* Warna latar sesuai gambar */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+}
+
+/* Kontainer utama */
+.login-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+}
+
+/* Card login */
+.login-card {
+    display: flex;
+    background-color: #EDE8D5; /* Warna card */
+    width: 60%;
+    min-height: 500px; /* Menjaga tinggi card tetap */
+    border-radius: 15px;
+    box-shadow: 5px 5px 15px rgba(0, 0, 0, 0.2);
+    overflow: hidden;
+    justify-content: center; /* Pusatkan card */
+}
+
+/* Bagian kiri (logo) */
+.login-left {
+    background-color: #F5F1E3;
+    width: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+}
+
+/* Logo */
+.logo {
+    max-width: 80%; /* Logo lebih besar dan tidak terlalu kecil */
+    max-height: 250px; /* Ukuran tetap untuk logo */
+    object-fit: contain; /* Menjaga proporsi gambar */
+}
+
+/* Bagian kanan (form) */
+.login-right {
+    width: 50%;
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Menengahkan form login */
+    align-items: center; /* Menyamakan posisi dengan logo */
+    padding: 50px;
+    text-align: center;
+    margin-top: 25px;
+}
+
+/* Judul login */
+.login-title {
+    font-size: 24px;
+    font-weight: bold;
+    margin-bottom: 25px;
+    width: 100%;
+    display: flex;
+    justify-content: center; /* Pusatkan judul */
+}
+
+.input-group {
+    width: 110%; /* sebelumnya 90% */
+    margin-bottom: 15px;
+    display: flex;
+    justify-content: center;
+}
+
+    .input-group input {
+        width: 100%; /* input akan isi seluruh .input-group */
+        max-width: 450px; /* tambahkan untuk kontrol panjang maksimum */
+        padding: 10px; /* sedikit lebih tinggi biar enak dilihat */
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        background-color: #F5F1E3;
+        font-size: 15px;
+    }
+
+
+/* Lupa Password */
+.forgot-password {
+    width: 100%;
+    text-align: right;
+    margin-bottom: 20px;
+    margin-left: 15px;
+    margin-top: -15px
+}
+
+    .forgot-password a {
+        color: #B99A81;
+        text-decoration: none;
+        font-size: 9px;
+        font-weight: bold;
+    }
+
+        .forgot-password a:hover {
+            text-decoration: underline;
+        }
+
+/* Tombol login */
+.login-button {
+    width: 90%; /* Lebarkan tombol */
+    padding: 12px;
+    border: none;
+    background-color: #B99A81;
+    color: black;
+    font-weight: bold;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+    display: flex;
+    justify-content: center; /* Pusatkan tombol */
+    align-items: center;
+    margin-bottom: 10px;
+    margin-left: 18px;
+}
+
+    .login-button:hover {
+        background-color: #A88B72;
+    }
+
+/* Link ke pendaftaran */
+.register-link {
+    margin-top: 0px;
+    font-size: 12px;
+    color: #333;
+    margin-left: 12px;
+}
+
+    .register-link a {
+        color: #B99A81;
+        text-decoration: none;
+        font-weight: bold;
+    }
+
+        .register-link a:hover {
+            text-decoration: underline;
+        }
+
+.alert {
+    padding: 10px;
+    margin-bottom: 20px;
+    border-radius: 5px;
+}
+
+.alert-danger {
+    color: red;
+
+}
+
+
+/* Responsif Mobile */
+@media (max-width: 768px) {
+    body {
+        height: 100vh;
+        padding: 0;
+        margin: 0;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .login-container {
+        width: 100%;
+        padding: 10px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .login-card {
+        flex-direction: column;
+        width: 90%;
+        max-width: 400px;
+        min-height: auto;
+        border-radius: 12px;
+        overflow: hidden;
+    }
+
+    .login-left,
+    .login-right {
+        width: 100%;
+        padding: 30px 20px;
+        text-align: center;
+        transform: translate(-20px, -10px);
+    }
+
+    /* Logo untuk mobile */
+    .logo {
+        max-width: 80%;
+        max-height: 200px; /* Ukuran lebih besar untuk logo di mobile */
+    }
+
+    /* Form dan tombol di mobile */
+    .login-title {
+        font-size: 22px;
+        font-weight: bold;
+        margin-bottom: 20px;
+        text-align: center;
+    }
+
+    .input-group {
+        width: 100%;
+        margin-bottom: 15px;
+        justify-content: center;
+    }
+
+        .input-group input {
+            width: 90%; /* Lebarkan input sedikit di mobile */
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            background-color: #F5F1E3;
+            font-size: 14px;
+        }
+
+    /* Lupa password di mobile */
+    .forgot-password {
+        width: 100%;
+        text-align: right; /* Posisikan lebih dekat dengan form password */
+        margin-top: -8px; /* Mengatur posisi agar tidak terlalu jauh */
+        font-size: 10px;
+        margin-left: 0px;
+    }
+
+        .forgot-password a {
+            color: #B99A81;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+    /* Tombol login di mobile */
+    .login-button {
+        width: 90%; /* Lebarkan tombol */
+        padding: 12px;
+        border: none;
+        background-color: #B99A81;
+        color: black;
+        font-weight: bold;
+        border-radius: 5px;
+        cursor: pointer;
+        transition: background-color 0.3s ease;
+        margin-top: 15px; /* Naikkan tombol lebih dekat dengan daftar */
+        display: flex;
+        justify-content: center; /* Pusatkan tombol */
+        align-items: center;
+        margin-left: 8px;
+    }
+
+        .login-button:hover {
+            background-color: #A88B72;
+        }
+
+    /* Pendaftaran link di mobile */
+    .register-link {
+        font-size: 12px;
+        text-align: center;
+        color: #333;
+        margin-left: -4px;
+    }
+
+        .register-link a {
+            color: #B99A81;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+            .register-link a:hover {
+                text-decoration: underline;
+            }
+}

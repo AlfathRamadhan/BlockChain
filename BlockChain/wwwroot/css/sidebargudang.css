@@ -1,0 +1,58 @@
+﻿.sidebar {
+    position: fixed;
+    width: 180px;
+    background-color: #EDE8D5;
+    padding: 0px 20px 20px 20px; /* Menambah padding atas */
+    height: 100vh;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    overflow-y: auto;
+    transition: left 0.3s ease;
+}
+
+    .sidebar .logo img {
+        width: 70%;
+        margin-bottom: 0px; /* Meningkatkan jarak bawah logo */
+        display: block;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+.nav-links a:hover {
+    background-color: #D6CDBB;
+    color: #5c3b24;
+    transform: scale(1.03);
+}
+
+.nav-links a.active {
+    background-color: #5c3b24;
+    color: white;
+}
+
+.nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+    .nav-links li {
+        margin-bottom: 15px;
+    }
+
+    .nav-links a {
+        text-decoration: none;
+        gap: 10px;
+        color: #2e1d0e;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+
+    .nav-links i {
+        font-size: 18px;
+        width: 20px;
+        text-align: center;
+    }

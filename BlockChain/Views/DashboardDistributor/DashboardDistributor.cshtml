@@ -1,0 +1,82 @@
+﻿@model List<BlockChain.Models.TransaksiKeuangan>
+
+@{
+    Layout = null;
+    int totalTransaksi = Model.Count;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard Distributor</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/dashboarddistributor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    <partial name="_SidebarDistributor" />
+
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Dashboard</h2>
+
+            <div class="cards">
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-boxes"></i></div>
+                    <div class="card-info">
+                        <p class="desc">Jumlah Produk</p>
+                        <p class="count">15</p>
+                    </div>
+                </div>
+                <div class="card">
+                    <div class="card-icon"><i class="fas fa-bag-shopping"></i></div>
+                    <div class="card-info">
+                        <p class="desc">Jumlah Transaksi Selesai</p>
+                        <p class="count">@totalTransaksi</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-section">
+                <div class="table-header">
+                    <h3><i class="fas fa-info-circle"></i> Pesanan Terbaru</h3>
+                </div>
+
+                <div class="table-wrapper">
+                    <table class="status-table">
+                        <thead>
+                            <tr>
+                                <th>Nomor Pembayaran</th>
+                                <th>Tanggal</th>
+                                <th>Subtotal (Rp)</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                var statusClass = item.Status.ToLower() switch
+                                {
+                                    "sudah dibayar" => "status green-text",
+                                    "belum dibayar" => "status yellow-text",
+                                    "gagal" => "status red-text",
+                                    _ => "status"
+                                };
+                                <tr>
+                                    <td>@item.NomorPembayaran</td>
+                                    <td>@item.Tanggal.ToString("d/M/yyyy")</td>
+                                    <td>@item.Jumlah.ToString("N0")</td>
+                                    <td><span class="@statusClass">@item.Status</span></td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

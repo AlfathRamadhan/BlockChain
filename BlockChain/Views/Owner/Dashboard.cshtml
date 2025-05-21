@@ -1,0 +1,85 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Cookies</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/ownerdashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    <partial name="Sidebar" />
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Dashboard</h2>
+
+            <div class="cards">
+                <div class="card-section">
+                    <h3>Pelacakan Produk</h3>
+                    <div class="card track">
+                        <p class="count">1</p>
+                        <button>LACAK PRODUK</button>
+                    </div>
+                </div>
+                <div class="card-section">
+                    <h3>Statistik Pengguna</h3>
+                    <div class="card user-stats">
+                        <div class="stats-row">
+                            <div class="stat-box">
+                                <div class="icon-box" ><i class="fas fa-user-tie"></i></div>
+                                <div>Keuangan</div>
+                                <span>@ViewBag.Keuangan</span>
+                            </div>
+                            <div class="stat-box">
+                                <div class="icon-box"><i class="fas fa-user-gear"></i></div>
+                                <div>Gudang</div>
+                                <span>@ViewBag.Gudang</span>
+                            </div>
+                            <div class="stat-box">
+                                <div class="icon-box"><i class="fas fa-user-tag"></i></div>
+                                <div>Distributor</div>
+                                <span>@ViewBag.Distributor</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="table-only-section">
+                <h3>Pelacakan Produk</h3>
+                <div class="table-wrapper">
+                    <table class="status-table">
+                        <thead>
+                            <tr>
+                                <th>Kode Produk</th>
+                                <th>Nama Produk</th>
+                                <th>Stok</th>
+                                <th>Tanggal Masuk</th>
+                                <th>Tanggal Expired</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var produk in ViewBag.DataProduk)
+                            {
+                                <tr>
+                                    <td>@produk.KodeProduk</td>
+                                    <td>@produk.Nama</td>
+                                    <td>@produk.Stok</td>
+                                    <td>@produk.TanggalMasuk.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</td>
+                                    <td>@produk.TanggalExpired.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

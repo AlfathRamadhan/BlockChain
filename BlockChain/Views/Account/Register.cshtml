@@ -1,0 +1,86 @@
+﻿@{
+    Layout = null;
+}
+@model BlockChain.Models.RegisterViewModel
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register - Cookies</title>
+    <link rel="stylesheet" href="~/css/register.css" asp-append-version="true">
+    <style>
+        .error-message {
+            color: red;
+            font-size: 12px;
+            margin-top: 4px;
+        }
+    </style>
+</head>
+<body>
+    <div class="login-container">
+        <div class="login-card">
+            <div class="login-left">
+                <img src="~/images/Logo.png" alt="Cookies Logo" class="logo">
+            </div>
+            <div class="login-right">
+                <h2 class="login-title">DAFTAR</h2>
+
+                <form method="post" asp-controller="Account" asp-action="Register" enctype="multipart/form-data">
+                    @Html.AntiForgeryToken()
+                    <div class="input-group">
+                        <input asp-for="NamaToko" placeholder="Nama Toko" class="form-control" />
+                        <span asp-validation-for="NamaToko" class="error-message"></span>
+                    </div>
+
+                    <div class="input-group">
+                        <input asp-for="Username" placeholder="Username" class="form-control" />
+                        <span asp-validation-for="Username" class="error-message"></span>
+                    </div>
+
+                    <div class="input-group">
+                        <input asp-for="Email" placeholder="Masukkan Email Anda (hanya gmail.com)" class="form-control" />
+                        <span asp-validation-for="Email" class="error-message"></span>
+                    </div>
+
+                    <div class="input-group">
+                        <input asp-for="NoHp" type="tel" class="form-control" placeholder="Nomor Handphone" pattern="[0-9]*" inputmode="numeric" />
+                        <span asp-validation-for="NoHp" class="error-message"></span>
+                    </div>
+
+
+                    <div class="input-group select-group">
+                        <select asp-for="Kategori" class="form-control">
+                            <option value="">Pilih Kategori</option>
+                            <option value="Bahan Makanan">Bahan Makanan</option>
+                            <option value="Alat Makan">Alat Makan</option>
+                        </select>
+                        <span asp-validation-for="Kategori" class="error-message"></span>
+                    </div>
+
+                    <div class="input-group file-group">
+                        <label asp-for="LogoFile">Upload Logo (PNG, JPG, Max 2MB)</label>
+                        <input asp-for="LogoFile" type="file" class="form-control" accept="image/*" />
+                        <span asp-validation-for="LogoFile" class="error-message"></span>
+                    </div>
+
+                    <div class="input-group">
+                        <input asp-for="KataSandi" placeholder="Kata Sandi" class="form-control" type="password" />
+                        <span asp-validation-for="KataSandi" class="error-message"></span>
+                    </div>
+
+                    <button type="submit" class="login-button">DAFTAR</button>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- jQuery + Validasi -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation@1.19.5/dist/jquery.validate.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/jquery.validate.unobtrusive.min.js"></script>
+
+    <script src="~/js/register.js"></script>
+</body>
+</html>

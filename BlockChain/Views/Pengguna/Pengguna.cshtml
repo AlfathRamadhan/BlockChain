@@ -1,0 +1,213 @@
+﻿@model IEnumerable<BlockChain.Models.User>
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <title>Manajemen Pengguna - Cookies</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/pengguna.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    @* Sidebar *@
+    @Html.Partial("Sidebar")
+
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div style="background-color: #f44336; color: white; padding: 10px; margin-bottom: 10px; border-radius: 5px;">
+            @TempData["ErrorMessage"]
+        </div>
+    }
+
+
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Manajemen Pengguna</h2>
+
+            <div class="table-section">
+                <button class="add-button" onclick="openAddModal()"><i class="fa fa-plus"></i> Tambah</button>
+
+                <div class="table-container">
+                    <div class="filter-bar" style="justify-content: space-between;">
+                        <div class="search-wrapper" style="display: flex; align-items: center;">
+                            <i class="fa fa-search search-icon"></i>
+                            <input type="text" id="searchInput" placeholder="Cari pengguna..." class="search-input" />
+                        </div>
+                    </div>
+
+                    <table class="transaction-table">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Username</th>
+                                <th>Nama Toko</th>
+                                <th>Kata Sandi</th>
+                                <th>Role</th>
+                                <th>Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody id="penggunaBody">
+                            @{
+                                int no = 1;
+                                foreach (var pengguna in Model)
+                                {
+                                    <tr>
+                                        <td>@no</td>
+                                        <td>@pengguna.Username</td>
+                                        <td>@pengguna.NamaToko</td>
+                                        <td>********</td>
+                                        <td>@pengguna.Role</td>
+                                        <td>
+                                            <button class="edit-button" onclick="openEditModal(@pengguna.Id)"><i class="fa-solid fa-pen-to-square"></i></button>
+                                            <button class="delete-button" onclick="confirmDelete(@pengguna.Id)"><i class="fa-solid fa-trash-can" style="color: inherit;"></i></button>
+                                        </td>
+                                    </tr>
+                                    no++;
+                                }
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            @* Modal Tambah/Edit *@
+            <div class="modal" id="userModal">
+                <div class="modal-content">
+                    <span class="close" onclick="closeModal()">&times;</span>
+                    <h3 id="modalTitle">Tambah Pengguna</h3>
+                    <form id="userForm" method="post" asp-action="Tambah">
+                        <input type="hidden" id="userId" name="Id" />
+
+                        <label for="Username">Username</label>
+                        <input type="text" id="Username" name="Username" required />
+
+                        <label for="NamaToko">Nama Toko</label>
+                        <input type="text" id="NamaToko" name="NamaToko"/>
+
+                        <label for="KataSandi">Kata Sandi</label>
+                        <input type="password" id="KataSandi" name="KataSandi" />
+
+                        <label for="Role">Role</label>
+                        <select id="Role" name="Role" required>
+                            <option value="">-- Pilih Role --</option>
+                            <option value="Distributor">Distributor</option>
+                            <option value="Gudang">Gudang</option>
+                            <option value="Keuangan">Keuangan</option>
+                        </select>
+
+                        <button type="submit" class="save-button">Simpan</button>
+                    </form>
+                </div>
+            </div>
+
+            @* Konfirmasi Hapus *@
+            <div class="modal" id="confirmModal">
+                <div class="modal-content">
+                    <p>Apakah Anda yakin ingin menghapus pengguna ini?</p>
+                    <button onclick="deleteConfirmed()" class="confirm-delete">Ya</button>
+                    <button onclick="closeConfirmModal()" class="cancel-delete">Batal</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openAddModal() {
+            document.getElementById("userForm").reset();
+            document.getElementById("modalTitle").innerText = "Tambah Pengguna";
+            document.getElementById("userModal").style.display = "block";
+        }
+
+        function openEditModal(id) {
+            fetch(`/Pengguna/GetUserById/${id}`)
+                .then(response => {
+                    if (!response.ok) throw new Error("Gagal mengambil data pengguna");
+                    return response.json();
+                })
+                .then(data => {
+                    document.getElementById("modalTitle").innerText = "Edit Pengguna";
+                    document.getElementById("userId").value = data.id;
+                    document.getElementById("Username").value = data.username;
+                    document.getElementById("NamaToko").value = data.namaToko;
+                    document.getElementById("KataSandi").value = "";
+                    document.getElementById("Role").value = data.role;
+
+                    document.getElementById("userModal").style.display = "block";
+                })
+                .catch(error => alert("Terjadi kesalahan: " + error.message));
+        }
+
+        function closeModal() {
+            document.getElementById("userModal").style.display = "none";
+        }
+
+        let deleteId = 0;
+        function confirmDelete(id) {
+            deleteId = id;
+            document.getElementById("confirmModal").style.display = "block";
+        }
+
+        function deleteConfirmed() {
+            window.location.href = '/Pengguna/Hapus/' + deleteId;
+        }
+
+        function closeConfirmModal() {
+            document.getElementById("confirmModal").style.display = "none";
+        }
+
+               document.getElementById("userForm").addEventListener("submit", function (e) {
+            const role = document.getElementById("Role").value;
+            const namaToko = document.getElementById("NamaToko").value;
+            const userId = document.getElementById("userId").value;
+            const password = document.getElementById("KataSandi").value;
+
+            if (role === "Distributor" && namaToko.trim() === "") {
+                alert("Nama Toko wajib diisi untuk Distributor.");
+                e.preventDefault();
+                return;
+            }
+
+            // Jika tambah (userId kosong), password harus diisi
+            if (!userId || userId == "0") {
+                if (password.trim() === "") {
+                    alert("Kata sandi wajib diisi saat membuat pengguna baru.");
+                    e.preventDefault();
+                }
+            }
+        });
+
+        // AJAX search on typing
+        document.getElementById("searchInput").addEventListener("input", function () {
+            const keyword = this.value;
+            fetch(`/Pengguna/FilterPengguna?search=${encodeURIComponent(keyword)}`)
+                .then(response => response.json())
+                .then(data => {
+                    const tbody = document.getElementById("penggunaBody");
+                    let html = "";
+                    let no = 1;
+
+                    data.forEach(p => {
+                        html += `
+                            <tr>
+                                <td>${no++}</td>
+                                <td>${p.username}</td>
+                                <td>${p.namaToko}</td>
+                                <td>********</td>
+                                <td>${p.role}</td>
+                                <td>
+                                    <button class="edit-button" onclick="openEditModal(${p.id})"><i class="fa-solid fa-pen-to-square"></i></button>
+                                    <button class="delete-button" onclick="confirmDelete(${p.id})"><i class="fa-solid fa-trash-can" style="color: inherit;"></i></button>
+                                </td>
+                            </tr>`;
+                    });
+
+                    tbody.innerHTML = html;
+                })
+                .catch(error => console.error("Gagal mengambil data:", error));
+        });
+    </script>
+</body>
+</html>

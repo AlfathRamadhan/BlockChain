@@ -1,0 +1,43 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - BlockChain</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/BlockChain.styles.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Layout.css" asp-append-version="true" />
+</head>
+<body>
+    <header>
+        <nav class="navbar custom-navbar navbar-dark  ">
+            <div class="container-fluid d-flex flex-wrap justify-content-between align-items-center">
+                <a class="navbar-brand mb-2 mb-sm-0" asp-area="" asp-controller="Home" asp-action="Index">
+                    <img src="~/images/Logo.png" alt="BlockChain Logo" width="80" height="80" class="d-inline-block align-text-top me-2" />
+                </a>
+                    <ul class="navbar-nav d-flex flex-row flex-md-row gap-3">
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Beranda</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">Masuk</a>
+                        </li>
+                    </ul>
+            </div>
+        </nav>
+    </header>
+
+    <div class="container main-content">
+        <main role="main" class="pb-3">
+            @RenderBody()
+        </main>
+    </div>
+
+    <footer class="custom-footer">
+        <div class="container">
+            &copy; 2025 - BlockChain
+        </div>
+    </footer>
+</body>
+</html>

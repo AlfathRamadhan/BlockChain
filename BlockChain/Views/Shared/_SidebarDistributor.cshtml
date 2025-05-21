@@ -1,0 +1,82 @@
+﻿@{
+    string currentController = ViewContext.RouteData.Values["controller"]?.ToString() ?? "";
+    string currentAction = ViewContext.RouteData.Values["action"]?.ToString() ?? "";
+}
+
+<div class="sidebar">
+    <div class="logo">
+        <img src="~/images/Logo.png" alt="Logo Cookies" />
+    </div>
+    <ul class="nav-links">
+        <li>
+            <a asp-controller="DashboardDistributor" asp-action="DashboardDistributor"
+               class="@(currentController == "DashboardDistributor" && currentAction == "DashboardDistributor" ? "active" : "")">
+                <i class="fa fa-home"></i> Dashboard
+            </a>
+        </li>
+        <li>
+            <a asp-controller="Notifikasi" asp-action="Index"
+               class="@(currentController == "Notifikasi" && currentAction == "Index" ? "active" : "")">
+                <i class="fa fa-bell"></i> Notifikasi
+            </a>
+        </li>
+        <li>
+            <a asp-controller="Chat" asp-action="Chat"
+               class="@(currentController == "Chat" && currentAction == "Chat" ? "active" : "")">
+                <i class="fa fa-comments"></i> Chat
+            </a>
+        </li>
+        <li>
+            <a asp-controller="ProfilDistributor" asp-action="Index"
+               class="@(currentController == "ProfilDistributor" && currentAction == "Index" ? "active" : "")">
+                <i class="fa fa-user"></i> Profil
+            </a>
+        </li>
+        <li>
+            <a asp-controller="Pesanan" asp-action="Index"
+               class="@(currentController == "Pesanan" && currentAction == "Index" ? "active" : "")">
+                <i class="fa fa-shopping-basket"></i> Pesanan
+            </a>
+        </li>
+        <li>
+            <a asp-controller="Inventaris" asp-action="Index"
+               class="@(currentController == "Inventaris" && currentAction == "Index" ? "active" : "")">
+                <i class="fa fa-boxes-stacked"></i> Inventaris
+            </a>
+        </li>
+        <li class="logout">
+            <a href="#" onclick="confirmLogout(event)">
+                <i class="fas fa-sign-out-alt"></i> Logout
+            </a>
+        </li>
+    </ul>
+</div>
+
+<!-- Modal Logout -->
+<div id="logoutModal" class="modal">
+    <div class="modal-content">
+        <p>Apakah Anda yakin ingin logout?</p>
+        <div class="modal-buttons">
+            <button onclick="closeLogoutModal()">Batal</button>
+            <a href="@Url.Action("Logout", "Account")" class="confirm-logout">Logout</a>
+        </div>
+    </div>
+</div>
+
+<script>
+    function confirmLogout(event) {
+        event.preventDefault();
+        document.getElementById("logoutModal").style.display = "block";
+    }
+
+    function closeLogoutModal() {
+        document.getElementById("logoutModal").style.display = "none";
+    }
+
+    window.onclick = function (event) {
+        var modal = document.getElementById("logoutModal");
+        if (event.target === modal) {
+            modal.style.display = "none";
+        }
+    };
+</script>
