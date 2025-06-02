@@ -1,0 +1,118 @@
+﻿@model List<BlockChain.Models.InventarisViewModel>
+
+@{
+    Layout = null;
+    var no = 1;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <title>Konfirmasi Pembelian</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/katalog.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layoutgudang.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body>
+    <partial name="_SidebarGudang" />
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Konfirmasi Produk yang Dipilih</h2>
+
+            <form method="post" action="/Katalog/Beli">
+                <div class="table-container">
+                    <table class="transaction-table" id="produkTable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Nama Produk</th>
+                                <th>Nama Toko</th>
+                                <th>Harga</th>
+                                <th>Stok Tersedia</th>
+                                <th>Satuan</th>
+                                <th>Jumlah Beli</th>
+                                <th>Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @if (Model == null || !Model.Any())
+                            {
+                                <tr>
+                                    <td colspan="8" style="text-align:center;">Tidak ada produk yang dipilih.</td>
+                                </tr>
+                            }
+                            else
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr data-harga="@item.HargaSatuan">
+                                        <td>@no</td>
+                                        <td>@item.NamaProduk</td>
+                                        <td>@item.NamaToko</td>
+                                        <td> Rp @item.HargaSatuan.ToString("N0", new System.Globalization.CultureInfo("id-ID"))</td>
+                                        <td>@item.Stok</td>
+                                        <td>@item.Satuan</td>
+                                        <td>
+                                            @if (item.Stok > 0)
+                                            {
+                                                <input type="number" class="jumlah-input" name="jumlah[@item.Id]" min="1" max="@item.Stok" value="1" />
+                                            }
+                                            else
+                                            {
+                                                <span style="color:red;">Stok habis</span>
+                                            }
+
+                                        </td>
+                                        <td class="subtotal">Rp @item.HargaSatuan.ToString("N0", new System.Globalization.CultureInfo("id-ID"))</td>
+                                    </tr>
+                                    no++;
+                                }
+                            }
+                        </tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="7" style="text-align:right; font-weight:bold;">Total:</td>
+                                <td id="totalHarga" style="font-weight:bold;">0</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+
+                    <div class="button-group"> 
+                        @if (Model != null && Model.Any())
+                        {
+                            <button type="submit" class="btn-beli">Beli Sekarang</button>
+                        }
+                            <button type="button" class="btn-kembali" onclick="window.location.href='/Katalog'">Kembali</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function updateSubtotal() {
+            let total = 0;
+            const rows = document.querySelectorAll("#produkTable tbody tr");
+            rows.forEach(row => {
+                const harga = parseInt(row.dataset.harga);
+                const jumlahInput = row.querySelector(".jumlah-input");
+                const jumlah = parseInt(jumlahInput.value) || 0;
+                const subtotal = harga * jumlah;
+
+                row.querySelector(".subtotal").textContent = "Rp " + subtotal.toLocaleString('id-ID');
+                total += subtotal;
+            });
+
+            document.getElementById("totalHarga").textContent = "Rp " + total.toLocaleString('id-ID');
+        }
+
+        document.querySelectorAll(".jumlah-input").forEach(input => {
+            input.addEventListener("input", updateSubtotal);
+        });
+
+        window.addEventListener("DOMContentLoaded", updateSubtotal);
+    </script>
+</body>
+</html>

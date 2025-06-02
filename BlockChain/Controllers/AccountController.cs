@@ -36,7 +36,6 @@ namespace BlockChain.Controllers
         }
 
         // POST: Proses Login
-        // POST: Proses Login
         [HttpPost]
         public async Task<IActionResult> Login(string Username, string Password)
         {
@@ -60,6 +59,7 @@ namespace BlockChain.Controllers
             }
 
             // Simpan data user ke session
+            HttpContext.Session.SetInt32("UserId", user.Id);
             HttpContext.Session.SetString("Username", user.Username);
             HttpContext.Session.SetString("NamaToko", user.NamaToko ?? "");
             HttpContext.Session.SetString("Role", user.Role);  // Menyimpan role ke session
@@ -95,9 +95,7 @@ namespace BlockChain.Controllers
             return View();
         }
 
-        // POST: Proses Register
-        // POST: Proses Register
-        [HttpPost]
+
         [HttpPost]
 public async Task<IActionResult> Register(RegisterViewModel model)
 {
@@ -229,8 +227,6 @@ public async Task<IActionResult> Register(RegisterViewModel model)
             return rand.Next(100000, 999999).ToString();
         }
 
-
-        // GET: Halaman Verifikasi Kode
         // GET: Halaman Verifikasi Kode
         [HttpGet]
         public IActionResult VerifyCode()
@@ -240,7 +236,6 @@ public async Task<IActionResult> Register(RegisterViewModel model)
             return View();
         }
 
-        // POST: Proses Verifikasi Kode
         // POST: Proses Verifikasi Kode
         [HttpPost]
         public IActionResult VerifyCode(string[] CodeDigit)
@@ -264,9 +259,6 @@ public async Task<IActionResult> Register(RegisterViewModel model)
             return View();
         }
 
-
-        // GET: Halaman Reset Password
-        // GET: Halaman Reset Password
         // GET: Halaman Reset Password
         [HttpGet]
         public IActionResult ResetPassword()
@@ -308,10 +300,6 @@ public async Task<IActionResult> Register(RegisterViewModel model)
             return RedirectToAction("Login");
         }
 
-
-
-
-        // GET: Logout
         // GET: Logout
         [HttpGet]
         public IActionResult Logout()

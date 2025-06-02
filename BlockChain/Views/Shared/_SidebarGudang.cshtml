@@ -14,6 +14,12 @@
             </a>
         </li>
         <li>
+            <a asp-controller="Notifikasi" asp-action="Notifikasi"
+               class="@(currentController == "Notifikasi" && currentAction == "Notifikasi" ? "active" : "")">
+                <i class="fa fa-bell"></i> Notifikasi
+            </a>
+        </li>
+        <li>
             <a asp-controller="Chat" asp-action="Chat" class="@(currentController == "Chat" && currentAction == "Chat" ? "active" : "")">
                 <i class="fa fa-comments"></i> Chat
             </a>
@@ -21,6 +27,11 @@
         <li>
             <a asp-controller="DataGudang" asp-action="Index" class="@(currentController == "DataGudang" && currentAction == "Index" ? "active" : "")">
                 <i class="fa fa-box"></i> Gudang
+            </a>
+        </li>
+        <li>
+            <a asp-controller="Katalog" asp-action="Index" class="@(currentController == "Katalog" && (currentAction == "Index" || currentAction == "Konfirmasi") ? "active" : "")">
+                <i class="fa fa-book-open"></i> Katalog
             </a>
         </li>
         <li class="logout">

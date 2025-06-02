@@ -1,5 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http; // Tambahkan ini agar bisa akses Session
+using Microsoft.AspNetCore.Http;
 using BlockChain.Models;
 using System;
 using System.Collections.Generic;
@@ -10,28 +10,33 @@ namespace BlockChain.Controllers
     {
         public IActionResult Chat(int userId)
         {
-            // Simulasi ambil role user login (misal dari session)
-            var role = HttpContext.Session.GetString("Role"); // Contoh: "Gudang", "Owner", "Keuangan"
+            // Ambil role dari session
+            var role = HttpContext.Session.GetString("Role");
+
+            // Jika session tidak ada atau role kosong, redirect ke login
+            if (string.IsNullOrEmpty(role))
+            {
+                return RedirectToAction("Login", "Account");
+            }
 
             // Simulasi daftar pesan berdasarkan userId
             var pesan = GetDummyMessages(userId);
 
-            // Redirect ke tampilan berdasarkan role
-            if (role == "Gudang")
+            // Routing ke view berdasarkan role
+            switch (role)
             {
-                return View("ChatGudang", pesan);
+                case "Gudang":
+                    return View("ChatGudang", pesan);
+                case "Owner":
+                    return View("Chat", pesan);
+                case "Keuangan":
+                    return View("ChatKeuangan", pesan);
+                case "Distributor":
+                    return View("ChatDistributor", pesan);
+                default:
+                    // Jika role tidak dikenali, redirect ke login
+                    return RedirectToAction("Login", "Account");
             }
-            else if (role == "Owner")
-            {
-                return View("Chat", pesan);
-            }
-            else if (role == "Keuangan")
-            {
-                return View("ChatKeuangan", pesan);
-            }
-
-            // Jika role tidak dikenali, fallback ke tampilan default (Gudang)
-            return View("ChatGudang", pesan);
         }
 
         private List<ChatMessage> GetDummyMessages(int userId)

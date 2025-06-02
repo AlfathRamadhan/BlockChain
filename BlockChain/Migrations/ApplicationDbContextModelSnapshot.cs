@@ -22,6 +22,38 @@ namespace BlockChain.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("BlockChain.Models.ItemProduk", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<decimal>("HargaSatuan")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<int>("JumlahUnit")
+                        .HasColumnType("int");
+
+                    b.Property<string>("NamaProduk")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Satuan")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("TransaksiKeuanganID")
+                        .HasColumnType("int");
+
+                    b.HasKey("ID");
+
+                    b.HasIndex("TransaksiKeuanganID");
+
+                    b.ToTable("ItemProduk");
+                });
+
             modelBuilder.Entity("BlockChain.Models.Produk", b =>
                 {
                     b.Property<int>("Id")
@@ -52,6 +84,41 @@ namespace BlockChain.Migrations
                     b.ToTable("Produk");
                 });
 
+            modelBuilder.Entity("BlockChain.Models.TransaksiKeuangan", b =>
+                {
+                    b.Property<int>("ID")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("ID"));
+
+                    b.Property<decimal>("Jumlah")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("MetodePembayaran")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NomorPembayaran")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Supplier")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("Tanggal")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("ID");
+
+                    b.ToTable("TransaksiKeuangan");
+                });
+
             modelBuilder.Entity("BlockChain.Models.User", b =>
                 {
                     b.Property<int>("Id")
@@ -59,6 +126,17 @@ namespace BlockChain.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Alamat")
+                        .HasMaxLength(250)
+                        .HasColumnType("nvarchar(250)");
+
+                    b.Property<string>("Bank")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Deskripsi")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
 
                     b.Property<string>("Email")
                         .HasColumnType("nvarchar(max)");
@@ -73,8 +151,19 @@ namespace BlockChain.Migrations
                     b.Property<string>("LogoPath")
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<string>("NamaLengkap")
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
                     b.Property<string>("NamaToko")
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NoHp")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("NoRekening")
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
 
                     b.Property<string>("Role")
                         .IsRequired()
@@ -87,6 +176,56 @@ namespace BlockChain.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Users");
+                });
+
+            modelBuilder.Entity("Inventaris", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("GambarProdukUrl")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<decimal>("HargaSatuan")
+                        .HasColumnType("decimal(18,2)");
+
+                    b.Property<string>("NamaProduk")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Satuan")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Stok")
+                        .HasColumnType("int");
+
+                    b.Property<DateTime?>("TanggalExpired")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Inventaris");
+                });
+
+            modelBuilder.Entity("BlockChain.Models.ItemProduk", b =>
+                {
+                    b.HasOne("BlockChain.Models.TransaksiKeuangan", "TransaksiKeuangan")
+                        .WithMany("Produk")
+                        .HasForeignKey("TransaksiKeuanganID")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("TransaksiKeuangan");
+                });
+
+            modelBuilder.Entity("BlockChain.Models.TransaksiKeuangan", b =>
+                {
+                    b.Navigation("Produk");
                 });
 #pragma warning restore 612, 618
         }

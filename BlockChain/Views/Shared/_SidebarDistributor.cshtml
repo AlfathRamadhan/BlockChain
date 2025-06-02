@@ -15,8 +15,8 @@
             </a>
         </li>
         <li>
-            <a asp-controller="Notifikasi" asp-action="Index"
-               class="@(currentController == "Notifikasi" && currentAction == "Index" ? "active" : "")">
+            <a asp-controller="Notifikasi" asp-action="Notifikasi"
+               class="@(currentController == "Notifikasi" && currentAction == "Notifikasi" ? "active" : "")">
                 <i class="fa fa-bell"></i> Notifikasi
             </a>
         </li>
@@ -27,8 +27,8 @@
             </a>
         </li>
         <li>
-            <a asp-controller="ProfilDistributor" asp-action="Index"
-               class="@(currentController == "ProfilDistributor" && currentAction == "Index" ? "active" : "")">
+            <a asp-controller="Profil" asp-action="Index"
+               class="@(currentController == "Profil" && (currentAction == "Index" || currentAction == "EditProfile") ? "active" : "")">
                 <i class="fa fa-user"></i> Profil
             </a>
         </li>

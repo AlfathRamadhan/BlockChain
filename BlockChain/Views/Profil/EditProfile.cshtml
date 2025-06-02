@@ -1,0 +1,106 @@
+﻿@model BlockChain.Models.EditProfileViewModel
+
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Edit Profil</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/distributorprofil.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    <partial name="_SidebarDistributor" />
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Edit Profil</h2>
+
+            <div class="profile-container">
+                <form asp-action="EditProfile" method="post" enctype="multipart/form-data">
+                    <div class="profile-header">
+                        <div class="logo-title" style="display:flex; align-items:center; gap:15px;">
+                            <img src="@(!string.IsNullOrEmpty(Model.LogoPath) ? Url.Content(Model.LogoPath) : Url.Content("~/images/logo.png"))"
+                                 alt="Logo Toko" class="profile-logo"
+                                 style="width:80px; height:80px; object-fit:contain; border-radius:8px;" />
+                            <h3>@Model.NamaToko</h3>
+                        </div>
+                    </div>
+
+                    <hr />
+
+                    <div class="profile-form">
+                        <div class="profile-group">
+                            <label>Nama Toko</label>
+                            <input asp-for="NamaToko" class="form-control" />
+                            <span asp-validation-for="NamaToko" class="text-danger"></span>
+                        </div>
+                        <div class="profile-group">
+                            <label>Nama Lengkap</label>
+                            <input asp-for="NamaLengkap" class="form-control" />
+                            <span asp-validation-for="NamaLengkap" class="text-danger"></span>
+                        </div>
+                        <div class="profile-group">
+                            <label>No HP</label>
+                            <input asp-for="NoHp" class="form-control" />
+                            <span asp-validation-for="NoHp" class="text-danger"></span>
+                        </div>
+                        <div class="profile-group">
+                            <label>Email</label>
+                            <input asp-for="Email" class="form-control" />
+                            <span asp-validation-for="Email" class="text-danger"></span>
+                        </div>
+                        <div class="profile-group">
+                            <label>Bank</label>
+                            <input asp-for="Bank" class="form-control" />
+                            <span asp-validation-for="Bank" class="text-danger"></span>
+                        </div>
+                        <div class="profile-group">
+                            <label>Nomor Rekening</label>
+                            <input asp-for="NoRekening" class="form-control" />
+                            <span asp-validation-for="NoRekening" class="text-danger"></span>
+                        </div>
+                        <div class="profile-group">
+                            <label>Username</label>
+                            <input asp-for="Username" class="form-control" />
+                            <span asp-validation-for="Username" class="text-danger"></span>
+                        </div>
+                        <div class="profile-group">
+                            <label>Password Baru (kosongkan jika tidak ingin ganti)</label>
+                            <input asp-for="PasswordBaru" type="password" class="form-control" />
+                            <span asp-validation-for="PasswordBaru" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="profile-row">
+                        <div class="profile-group">
+                            <label>Deskripsi</label>
+                            <textarea asp-for="Deskripsi" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Deskripsi" class="text-danger"></span>
+                        </div>
+                        <div class="profile-group">
+                            <label>Alamat</label>
+                            <textarea asp-for="Alamat" class="form-control" rows="4"></textarea>
+                            <span asp-validation-for="Alamat" class="text-danger"></span>
+                        </div>
+                    </div>
+
+                    <div class="profile-group" style="margin-top: 15px;">
+                        <label>Logo Toko (ubah jika perlu)</label>
+                        <input asp-for="LogoFile" type="file" class="form-control" />
+                        <span asp-validation-for="LogoFile" class="text-danger"></span>
+                    </div>
+
+                    <div style="margin-top: 20px;">
+                        <button type="submit" class="btn-brown">Simpan Perubahan</button>
+                        <button type="button" class="btn-brown" onclick="window.location.href='/Profil'">Kembali</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

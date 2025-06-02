@@ -3,6 +3,7 @@
 @{
     Layout = null;
     int totalTransaksi = Model.Count;
+    int no = 1;
 }
 
 <!DOCTYPE html>
@@ -13,6 +14,7 @@
     <title>Dashboard Distributor</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/dashboarddistributor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layoutdistributor.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
@@ -48,6 +50,7 @@
                     <table class="status-table">
                         <thead>
                             <tr>
+                                <th>No</th>
                                 <th>Nomor Pembayaran</th>
                                 <th>Tanggal</th>
                                 <th>Subtotal (Rp)</th>
@@ -65,11 +68,15 @@
                                     _ => "status"
                                 };
                                 <tr>
+                                    <td>@no</td>
                                     <td>@item.NomorPembayaran</td>
-                                    <td>@item.Tanggal.ToString("d/M/yyyy")</td>
+                                    <td>
+                                        @item.Tanggal.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))
+                                    </td>
                                     <td>@item.Jumlah.ToString("N0")</td>
                                     <td><span class="@statusClass">@item.Status</span></td>
                                 </tr>
+                                no++;
                             }
                         </tbody>
                     </table>

@@ -1,0 +1,155 @@
+﻿@model BlockChain.Models.NotifikasiGabunganViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notifikasi</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/gudangnotifikasi.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layoutgudang.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    <partial name="_SidebarGudang" />
+
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Notifikasi</h2>
+
+            <div class="notification-tabs">
+                <button class="tab active" onclick="filterNotifications('semua', event)">Semua</button>
+                <button class="tab" onclick="filterNotifications('Owner', event)">Owner</button>
+                <button class="tab" onclick="filterNotifications('Keuangan', event)">Keuangan</button>
+            </div>
+
+            <div class="notification-container">
+                @foreach (var notif in Model.NotifikasiGabungan)
+                {
+                    var dayName = notif.Tanggal.ToString("dddd", new System.Globalization.CultureInfo("id-ID"));
+                    var fullDate = notif.Tanggal.ToString("dd/MM/yyyy");
+                    var jam = notif.Tanggal.ToString("HH:mm");
+                    var notifJson = Newtonsoft.Json.JsonConvert.SerializeObject(notif);
+                    var notifJsonEncoded = Html.Raw(System.Net.WebUtility.HtmlEncode(notifJson));
+
+                    <div class="notification-item @notif.Role" data-role="@notif.Role">
+                        <div class="notification-left" style="display:block;">
+                            <span>@notif.Pesan</span>
+                            <div class="notification-time" style="margin-top:5px;">
+                                <small>@dayName, @fullDate @jam</small>
+                            </div>
+                        </div>
+                        <button class="notification-button"
+                                onclick='openModal(@notifJsonEncoded)'>
+                            Cek Status
+                        </button>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 class="modal-title">Detail Produk</h3>
+            <div id="produkDetailList">
+                <table class="produk-table">
+                    <thead>
+                        <tr>
+                            <th>Nama Produk</th>
+                            <th>Jumlah</th>
+                            <th>Satuan</th>
+                            <th>Expired</th>
+                            <th>Harga Satuan</th>
+                            <th>Total Harga</th>
+                        </tr>
+                    </thead>
+                    <tbody id="produkTableBody"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" style="text-align:right;"><strong>Subtotal:</strong></td>
+                            <td id="subtotalHarga"><strong>Rp 0</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function filterNotifications(kategori, event) {
+            const items = document.querySelectorAll('.notification-item');
+            const tabs = document.querySelectorAll('.notification-tabs .tab');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            if (event) event.target.classList.add('active');
+
+            items.forEach(item => {
+                if (kategori === 'semua') {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = item.classList.contains(kategori) ? 'flex' : 'none';
+                }
+            });
+        }
+         function openModal(notif) {
+            const tbody = document.getElementById("produkTableBody");
+            const subtotalEl = document.getElementById("subtotalHarga");
+            tbody.innerHTML = "";
+            let subtotal = 0;
+
+            const hasProdukData =
+                notif.NamaProduk && notif.NamaProduk.length > 0 &&
+                notif.JumlahDibeli && notif.JumlahDibeli.length > 0;
+
+            if (hasProdukData) {
+                for (let i = 0; i < notif.NamaProduk.length; i++) {
+                    const row = document.createElement("tr");
+
+                    const hargaSatuan = notif.HargaSatuan?.[i] || 0;
+                    const jumlah = notif.JumlahDibeli?.[i] || 0;
+                    const total = hargaSatuan * jumlah;
+                    subtotal += total;
+
+                    row.innerHTML = `
+                        <td>${notif.NamaProduk[i]}</td>
+                        <td>${jumlah}</td>
+                        <td>${notif.Satuan?.[i] ?? '-'}</td>
+                        <td>${notif.TanggalExpired?.[i] ? new Date(notif.TanggalExpired[i]).toLocaleDateString("id-ID") : '-'}</td>
+                        <td>Rp ${hargaSatuan.toLocaleString("id-ID")}</td>
+                        <td>Rp ${total.toLocaleString("id-ID")}</td>
+                    `;
+
+                    tbody.appendChild(row);
+                }
+
+                subtotalEl.innerHTML = `<strong>Rp ${subtotal.toLocaleString("id-ID")}</strong>`;
+            } else {
+                const row = document.createElement("tr");
+                row.innerHTML = `<td colspan="6">${notif.Pesan}</td>`;
+                tbody.appendChild(row);
+                subtotalEl.innerHTML = `<strong>-</strong>`;
+            }
+
+            document.getElementById("detailModal").style.display = "block";
+        }
+
+
+            function closeModal() {
+                document.getElementById("detailModal").style.display = "none";
+            }
+
+            window.onclick = function (event) {
+                const modal = document.getElementById("detailModal");
+                if (event.target == modal) {
+                    closeModal();
+                }
+            }
+    </script>
+</body>
+</html>

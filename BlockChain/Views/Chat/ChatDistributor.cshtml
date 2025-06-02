@@ -1,0 +1,99 @@
+﻿@model List<BlockChain.Models.ChatMessage>
+
+@{
+    Layout = null;
+    var user = Model.FirstOrDefault()?.Penerima ?? "Pengguna";
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Halaman Chat</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/distributorchat.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layoutdistributor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+    <partial name="_SidebarDistributor" />
+    <div class="chat-page">
+        <div class="chat-container">
+            <div class="chat-title-wrapper">
+                <div class="title">Chat</div>
+            </div>
+            <!-- SIDEBAR KIRI -->
+            <div class="chat-left">
+                <div class="chat-section-title-wrapper">
+                    <span class="chat-section-title">Inbox</span>
+                    <div class="chat-section-divider"></div>
+                </div>
+                <div class="chat-search">
+                    <input type="text" placeholder="Cari nama akun..." />
+                </div>
+                <div class="chat-user-list">
+                    <div class="chat-user active">
+                        <div class="top-row">
+                            <span><i class="fas fa-user-circle"></i> @user</span>
+                            <span>@Model.LastOrDefault()?.Tanggal.ToShortTimeString()</span>
+                        </div>
+                        <div class="bottom-row">@Model.LastOrDefault()?.Pesan</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PANEL KANAN -->
+            <div class="chat-right" id="chatPanel">
+                <div class="chat-header">
+                    <div class="avatar-large"><i class="fas fa-user-circle"></i></div>
+                    <strong id="chatUserName">@user</strong>
+                </div>
+
+                <div class="chat-body" id="chatMessages">
+                    @foreach (var group in Model.GroupBy(m => m.Tanggal.Date).OrderBy(g => g.Key))
+                    {
+                        <div class="chat-date-separator">
+                            <hr />
+                            <span>@group.Key.ToString("dd MMMM")</span>
+                            <hr />
+                        </div>
+
+                        @foreach (var msg in group.OrderBy(m => m.Tanggal))
+                        {
+                            <div class="message @(msg.IsMe ? "right" : "left")">
+                                <p>@msg.Pesan</p>
+                                <span class="time">@msg.Tanggal.ToShortTimeString()</span>
+                            </div>
+                        }
+                    }
+                </div>
+
+
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Tulis pesan..." />
+                    <div class="input-icons">
+                        <i class="fas fa-paperclip"></i>
+                        <i class="fas fa-paper-plane" onclick="sendMessage()"></i>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- SCRIPT -->
+    <script>
+        function sendMessage() {
+            let input = document.getElementById('messageInput');
+            let message = input.value.trim();
+            if (message === "") return;
+
+            let messageDiv = document.createElement('div');
+            messageDiv.classList.add('message', 'right');
+            messageDiv.innerHTML = `<p>${message}</p><span class="time">${new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>`;
+            document.getElementById('chatMessages').appendChild(messageDiv);
+            input.value = '';
+        }
+    </script>
+</body>
+</html>

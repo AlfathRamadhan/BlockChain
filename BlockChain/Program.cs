@@ -1,16 +1,14 @@
-using BlockChain.Models;
+﻿using BlockChain.Models;
 using BlockChain.Services;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
-
-
-builder.Services.AddControllers()
-    .AddJsonOptions(options =>
-    {
-        options.JsonSerializerOptions.PropertyNamingPolicy = null;
-    });
 
 // Tambah layanan MVC
 builder.Services.AddControllersWithViews();
@@ -19,59 +17,52 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDistributedMemoryCache();
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout = TimeSpan.FromMinutes(30);  // Set timeout sesi
-    options.Cookie.HttpOnly = true; // Cookie hanya dapat diakses oleh HTTP, bukan JavaScript
-    options.Cookie.IsEssential = true; // Menandakan bahwa cookie sesi esensial untuk aplikasi
+    options.IdleTimeout = TimeSpan.FromMinutes(30);
+    options.Cookie.HttpOnly = true;
+    options.Cookie.IsEssential = true;
 });
 
-// Konfigurasi koneksi ke database SQL Server
+// Konfigurasi koneksi database
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// Konfigurasi autentikasi dengan cookie (gunakan jika Anda memerlukan autentikasi berbasis cookie)
+// Konfigurasi autentikasi cookie
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie(options =>
     {
-        options.LoginPath = "/Account/Login";  // Rute untuk login
-        options.LogoutPath = "/Account/Logout"; // Rute untuk logout
-        options.AccessDeniedPath = "/Account/AccessDenied"; // Rute untuk akses yang ditolak
+        options.LoginPath = "/Account/Login";
+        options.LogoutPath = "/Account/Logout";
+        options.AccessDeniedPath = "/Account/AccessDenied";
     });
 
-// Konfigurasi email (jika diperlukan)
+// Registrasi PasswordHasher untuk User
+builder.Services.AddScoped<IPasswordHasher<User>, PasswordHasher<User>>();
+
+// Registrasi layanan email jika ada
 builder.Services.Configure<EmailSettings>(builder.Configuration.GetSection("EmailSettings"));
 builder.Services.AddTransient<IEmailSender, EmailSender>();
 
 var app = builder.Build();
 
-// Middleware untuk menangani error di luar mode development
+// Middleware pipeline
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    app.UseHsts(); // Mengaktifkan HTTP Strict Transport Security
+    app.UseHsts();
 }
 
-// Gunakan pengalihan ke HTTPS jika diperlukan
 app.UseHttpsRedirection();
-
-// Gunakan file statis seperti CSS, JS, gambar
 app.UseStaticFiles();
 
-// Gunakan routing untuk menentukan kontroler dan aksi
 app.UseRouting();
 
-// Middleware untuk sesi (pastikan di sini agar sesi dapat diakses)
 app.UseSession();
 
-// Middleware autentikasi untuk memverifikasi pengguna yang telah login
-app.UseAuthentication(); // Penting untuk autentikasi berbasis cookie
-
-// Middleware otorisasi untuk membatasi akses ke halaman yang memerlukan autentikasi
+app.UseAuthentication();
 app.UseAuthorization();
 
-// Routing ke controller dan aksi sesuai pola URL
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
-// Jalankan aplikasi
 app.Run();

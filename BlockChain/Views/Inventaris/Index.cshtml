@@ -1,0 +1,225 @@
+﻿@model List<BlockChain.Models.InventarisViewModel>
+
+@{
+    Layout = null;
+    var no = 1;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <title>Inventaris</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/inventaris.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layoutdistributor.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body>
+    <partial name="_SidebarDistributor" />
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Inventaris</h2>
+
+            <div class="table-section">
+                <div class="table-header">
+                    <button class="add-button" onclick="openModal()">+ Tambah Produk</button>
+                </div>
+                <div class="table-container">
+                    <table class="transaction-table">
+                        <thead>
+                            <tr>
+                                <th class="no-col">No</th>
+                                <th>Gambar</th>
+                                <th>Nama Produk</th>
+                                <th class="stok-col">Stok</th>
+                                <th class="satuan-col">Satuan</th>
+                                <th>Harga Satuan (Rp)</th>
+                                <th class="tanggal-col" >Tanggal Expired</th>
+                                <th class="aksi-col">Aksi</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td class="no-col">@no</td>
+                                    <td>
+                                        @if (!string.IsNullOrEmpty(item.GambarProdukUrl))
+                                        {
+                                            <img src="@item.GambarProdukUrl" alt="Gambar @item.NamaProduk" class="product-image" />
+                                        }
+                                        else
+                                        {
+                                            <span>Tidak ada</span>
+                                        }
+                                </td>
+                                <td>@item.NamaProduk</td>
+                                <td class="stok-col">@item.Stok</td>
+                                <td class="satuan-col">@item.Satuan</td>
+                                <td>@item.HargaSatuan.ToString("N0", new System.Globalization.CultureInfo("id-ID"))</td>
+                                <td class="tanggal-col" >
+                                    @(item.TanggalExpired.HasValue
+                                                                        ? item.TanggalExpired.Value.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))
+                                                                        : "-")
+                                </td>
+                                <td class="aksi-col">
+                                    <button class="edit-button" onclick="openEditModal(
+                                            '@item.Id',
+                                            '@item.NamaProduk.Replace("'", "\\'")',
+                                            '@item.Stok',
+                                            '@item.Satuan.Replace("'", "\\'")',
+                                            '@item.HargaSatuan.ToString("0.##", System.Globalization.CultureInfo.InvariantCulture)',
+                                            '@(item.TanggalExpired?.ToString("yyyy-MM-dd") ?? "")')">
+                                        <i class="fa-solid fa-pen-to-square"></i>
+                                    </button>
+
+                                        <button class="delete-button" onclick="openDeleteModal('@item.Id', '@item.NamaProduk.Replace("'", "\\'")')">
+                                            <i class="fa-solid fa-trash-can"></i>
+                                        </button>
+                                    </td>
+                                </tr>
+                                                        no++;
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Tambah Produk -->
+    <div id="tambahModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Tambah Produk</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <form method="post" action="/Inventaris/Tambah" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label>Gambar Produk</label>
+                    <input type="file" name="GambarProduk" accept="image/*" />
+                </div>
+                <div class="form-group">
+                    <label>Nama Produk</label>
+                    <input type="text" name="NamaProduk" required />
+                </div>
+                <div class="form-group">
+                    <label>Stok</label>
+                    <input type="number" name="Stok" min="0" required />
+                </div>
+                <div class="form-group">
+                    <label>Satuan</label>
+                    <input type="text" name="Satuan" required />
+                </div>
+                <div class="form-group">
+                    <label>Harga Satuan (Rp)</label>
+                    <input type="number" name="HargaSatuan" step="0.01" min="0" required />
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Expired</label>
+                    <input type="date" name="TanggalExpired" required />
+                </div>
+                <button type="submit" class="save-button">Simpan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Edit Produk -->
+    <div id="editModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Edit Produk</h3>
+                <span class="close" onclick="closeEditModal()">&times;</span>
+            </div>
+            <form method="post" action="/Inventaris/Edit" enctype="multipart/form-data">
+                <input type="hidden" name="Id" id="editId" />
+                <div class="form-group">
+                    <label>Nama Produk</label>
+                    <input type="text" name="NamaProduk" id="editNamaProduk" required />
+                </div>
+                <div class="form-group">
+                    <label>Stok</label>
+                    <input type="number" name="Stok" id="editStok" min="0" required />
+                </div>
+                <div class="form-group">
+                    <label>Satuan</label>
+                    <input type="text" name="Satuan" id="editSatuan" required />
+                </div>
+                <div class="form-group">
+                    <label>Harga Satuan (Rp)</label>
+                    <input type="number" name="HargaSatuan" id="editHargaSatuan" step="0.01" min="0" required />
+                </div>
+                <div class="form-group">
+                    <label>Tanggal Expired</label>
+                    <input type="date" name="TanggalExpired" id="editTanggalExpired" required />
+                </div>
+                <button type="submit" class="save-button">Simpan Perubahan</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div id="deleteModal" class="modal" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Hapus Produk</h3>
+                <span class="close" onclick="closeDeleteModal()">&times;</span>
+            </div>
+            <form method="post" action="/Inventaris/Hapus">
+                <input type="hidden" name="Id" id="deleteId" />
+                <p>Apakah Anda yakin ingin menghapus produk <strong id="deleteNama"></strong>?</p>
+                <div style="margin-top: 20px;">
+                    <button type="submit" class="save-button" style="background-color: red;">Hapus</button>
+                    <button type="button" class="save-button" onclick="closeDeleteModal()">Batal</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        function openModal() {
+            document.getElementById("tambahModal").style.display = "block";
+        }
+
+        function closeModal() {
+            document.getElementById("tambahModal").style.display = "none";
+        }
+
+        function openEditModal(id, nama, stok, satuan, harga, expired) {
+            document.getElementById("editId").value = id;
+            document.getElementById("editNamaProduk").value = nama;
+            document.getElementById("editStok").value = stok;
+            document.getElementById("editSatuan").value = satuan;
+            document.getElementById("editHargaSatuan").value = harga;
+            document.getElementById("editTanggalExpired").value = expired;
+            document.getElementById("editModal").style.display = "block";
+
+            console.log("Tanggal expired yang diterima:", expired);
+            console.log("Setting tanggal expired ke:", expired);
+        }
+
+        function closeEditModal() {
+            document.getElementById("editModal").style.display = "none";
+        }
+
+        function openDeleteModal(id, nama) {
+            document.getElementById("deleteId").value = id;
+            document.getElementById("deleteNama").textContent = nama;
+            document.getElementById("deleteModal").style.display = "block";
+        }
+
+        function closeDeleteModal() {
+            document.getElementById("deleteModal").style.display = "none";
+        }
+
+        window.onclick = function (event) {
+            const modals = ["tambahModal", "editModal", "deleteModal"];
+            modals.forEach(id => {
+                const modal = document.getElementById(id);
+                if (event.target === modal) modal.style.display = "none";
+            });
+        }
+    </script>
+</body>
+</html>

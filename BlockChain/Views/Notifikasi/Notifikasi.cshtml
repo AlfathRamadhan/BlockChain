@@ -1,49 +1,284 @@
-﻿@{
+﻿@model BlockChain.Models.NotifikasiGabunganViewModel
+@{
     Layout = null;
 }
 
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Notifikasi - Cookies</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Notifikasi</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/ownernotifikasi.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
-    @Html.Partial("Sidebar")
+    <partial name="Sidebar" />
+    @Html.AntiForgeryToken()
     <div class="dashboard-wrapper">
         <div class="main-content">
             <h2 class="title">Notifikasi</h2>
-
-            <div class="notification-container">
-                <hr />
-
-                <div class="notification-item">
-                    <div class="notification-left">
-                        <div class="date-box">
-                            <div>4</div>
-                            <div>Sen</div>
-                        </div>
-                        <span>Pelacakan Produk 6544246890</span>
+            <div id="pembelianDetailSection" style="display: block;">
+                <div class="notification-container">
+                    <div class="notification-tabs">
+                        <button class="tab active" onclick="filterNotifications(event, 'semua')">Semua</button>
+                        <button class="tab" onclick="filterNotifications(event, 'distributor')">Distributor</button>
+                        <button class="tab" onclick="filterNotifications(event, 'gudang')">Gudang</button>
+                        <button class="tab" onclick="filterNotifications(event, 'keuangan')">Keuangan</button>
                     </div>
-                    <button class="notification-button">Cek Status</button>
-                </div>
 
-                <div class="notification-item">
-                    <div class="notification-left">
-                        <div class="date-box">
-                            <div>4</div>
-                            <div>Sen</div>
-                        </div>
-                        <span>Permintaan Verifikasi Pendaftaran Distributor</span>
-                    </div>
-                    <button class="notification-button">Cek Status</button>
+                    <hr />
+
+                    @if (Model.NotifikasiGabungan != null && Model.NotifikasiGabungan.Any())
+                    {
+                        @foreach (var notif in Model.NotifikasiGabungan)
+                        {
+                            <div class="notification-item @(notif.Role?.ToLower() ?? "umum")" data-id="@notif.Id">
+                                <div class="notification-content">
+                                    @if (notif.IsPembelian && notif.NamaProduk != null)
+                                    {
+                                        <p><strong>@notif.NamaProduk.Count produk</strong> menunggu konfirmasi pembelian.</p>
+                                        <p><small>@notif.Tanggal.ToString("dd/MM/yyyy HH:mm")</small></p>
+                                    }
+                                    else
+                                    {
+                                        <p><strong>Notifikasi:</strong> @notif.Pesan</p>
+                                        <p><small>@notif.Tanggal.ToString("dd/MM/yyyy HH:mm")</small></p>
+                                    }
+                                </div>
+
+                                @{
+                                    var jsonProduk = System.Text.Json.JsonSerializer.Serialize(new
+                                    {
+                                        Produk = notif.NamaProduk ?? new List<string>(),
+                                        Stok = notif.JumlahDibeli ?? new List<int>(),
+                                        Satuan = notif.Satuan ?? new List<string>(),
+                                        HargaSatuan = notif.HargaSatuan ?? new List<decimal>(),
+                                        TotalHarga = notif.TotalHarga ?? new List<decimal>(),
+                                        TanggalExpired = (notif.TanggalExpired ?? new List<DateTime?>())
+                                    .Select(t => t.HasValue ? t.Value.ToString("dd/MM/yyyy") : "-")
+                                    .ToList()
+                                    });
+                                }
+
+                                @if (notif.IsPembelian && notif.NamaProduk != null && notif.JumlahDibeli != null && notif.Satuan != null &&
+                                                        notif.NamaProduk.Count == notif.JumlahDibeli.Count &&
+                                                        notif.JumlahDibeli.Count == notif.Satuan.Count)
+                                {
+                                    <button class="notification-button" data-detail='@Html.Raw(jsonProduk)' data-id="@notif.Id" onclick="openModal(this)">
+                                        Cek Detail
+                                    </button>
+                                }
+                                else
+                                {
+                                    <button class="notification-button" disabled>Detail Tidak Tersedia</button>
+                                }
+                                <button class="delete-button" onclick="deleteNotification(@notif.Id)" title="Hapus Notifikasi" style="background:none; border:none; cursor:pointer; color:#c00;">
+                                    <i class="fa fa-trash"></i>
+                                </button>
+                            </div>
+                        }
+                    }
+                    else
+                    {
+                        <p>Tidak ada notifikasi.</p>
+                    }
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Modal -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <h3 class="modal-title">Detail Konfirmasi</h3>
+            <div id="produkDetailList">
+                <table class="produk-table">
+                    <thead>
+                        <tr>
+                            <th>Nama Produk</th>
+                            <th>Stok</th>
+                            <th>Satuan</th>
+                            <th>Expired</th>
+                            <th>Harga Satuan</th>
+                            <th>Total Harga</th>
+                        </tr>
+                    </thead>
+                    <tbody id="produkTableBody"></tbody>
+                    <tfoot>
+                        <tr>
+                            <td colspan="5" style="text-align:right;"><strong>Subtotal:</strong></td>
+                            <td id="subtotalHarga"><strong>Rp 0</strong></td>
+                        </tr>
+                    </tfoot>
+                </table>
+                <div class="modal-actions">
+                    <button class="confirm-button" onclick="konfirmasiPembelian()">Konfirmasi</button>
+                    <button class="reject-button" onclick="tolakPembelian()">Tolak</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentNotifId = null;
+
+        function filterNotifications(event, kategori) {
+            const items = document.querySelectorAll('.notification-item');
+            const tabs = document.querySelectorAll('.notification-tabs .tab');
+
+            tabs.forEach(tab => tab.classList.remove('active'));
+            event.target.classList.add('active');
+
+            items.forEach(item => {
+                if (kategori === 'semua') {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = item.classList.contains(kategori) ? 'flex' : 'none';
+                }
+            });
+        }
+
+        function openModal(button) {
+            currentNotifId = button.getAttribute("data-id");
+
+            const jsonString = button.getAttribute("data-detail");
+
+            let parsedData;
+            try {
+                parsedData = JSON.parse(jsonString);
+            } catch (e) {
+                console.error("Gagal parsing data:", e);
+                return;
+            }
+
+            const tbody = document.getElementById("produkTableBody");
+            tbody.innerHTML = "";
+            let subtotal = 0;
+
+            for (let i = 0; i < parsedData.Produk.length; i++) {
+                const nama = parsedData.Produk[i];
+                const jumlah = parsedData.Stok[i] ?? 0;
+                const satuan = parsedData.Satuan[i] ?? '-';
+                const expired = parsedData.TanggalExpired[i] ?? '-';
+                const harga = parsedData.HargaSatuan[i] ?? 0;
+                const total = parsedData.TotalHarga[i] ?? (jumlah * harga);
+
+                subtotal += total;
+
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${nama}</td>
+                    <td>${jumlah}</td>
+                    <td>${satuan}</td>
+                    <td>${expired}</td>
+                    <td>Rp ${harga.toLocaleString('id-ID')}</td>
+                    <td>Rp ${total.toLocaleString('id-ID')}</td>
+                `;
+                tbody.appendChild(row);
+            }
+
+            document.getElementById("subtotalHarga").innerHTML = `<strong>Rp ${subtotal.toLocaleString('id-ID')}</strong>`;
+
+            const modal = document.getElementById("detailModal");
+            modal.classList.add("show");
+            modal.style.display = "block";
+        }
+
+        function closeModal() {
+            const modal = document.getElementById("detailModal");
+            modal.classList.remove("show");
+            modal.style.display = "none";
+        }
+
+        window.onclick = function (event) {
+            const modal = document.getElementById("detailModal");
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        function deleteNotification(id) {
+            if (!confirm("Yakin ingin menghapus notifikasi ini?")) return;
+
+            fetch('/Notifikasi/DeleteNotification/' + id, {
+                method: 'DELETE',
+                headers: {
+                    'RequestVerificationToken': getAntiForgeryToken()
+                }
+            })
+            .then(response => {
+                if (response.ok) {
+                    // Hapus elemen notifikasi dari UI
+                    const notifDiv = document.querySelector(`.notification-item[data-id='${id}']`);
+                    if (notifDiv) notifDiv.remove();
+                } else {
+                    alert("Gagal menghapus notifikasi.");
+                }
+            })
+            .catch(error => {
+                console.error("Error:", error);
+                alert("Terjadi kesalahan saat menghapus notifikasi.");
+            });
+        }
+
+        function getAntiForgeryToken() {
+            const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
+            return tokenElement ? tokenElement.value : '';
+        }
+
+        function konfirmasiPembelian() {
+            if (!currentNotifId) return alert("Notifikasi tidak valid.");
+
+            fetch(`/Notifikasi/KonfirmasiPembelian/${currentNotifId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
+                body: JSON.stringify({ id: currentNotifId })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Pembelian dikonfirmasi!");
+                    closeModal();
+                    removeNotificationFromUI(currentNotifId);
+                } else {
+                    alert("Gagal konfirmasi pembelian.");
+                }
+            })
+            .catch(() => alert("Terjadi kesalahan saat konfirmasi pembelian."));
+        }
+
+        function tolakPembelian() {
+            if (!currentNotifId) return alert("Notifikasi tidak valid.");
+
+            fetch(`/Notifikasi/TolakPembelian/${currentNotifId}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'RequestVerificationToken': getAntiForgeryToken()
+                },
+                body: JSON.stringify({ id: currentNotifId })
+            })
+            .then(response => {
+                if (response.ok) {
+                    alert("Pembelian ditolak!");
+                    closeModal();
+                    removeNotificationFromUI(currentNotifId);
+                } else {
+                    alert("Gagal menolak pembelian.");
+                }
+            })
+            .catch(() => alert("Terjadi kesalahan saat menolak pembelian."));
+        }
+
+        function removeNotificationFromUI(id) {
+            const notifDiv = document.querySelector(`.notification-item[data-id='${id}']`);
+            if (notifDiv) notifDiv.remove();
+        }
+    </script>
 </body>
 </html>

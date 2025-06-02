@@ -31,7 +31,7 @@
                     <table class="transaction-table">
                         <thead>
                             <tr>
-                                <th>Nomor Pembayaran</th>
+                                <th>Nomor Pesanan</th>
                                 <th>Supplier</th>
                                 <th>Tanggal</th>
                                 <th>Sub Total (Rp)</th>
@@ -116,7 +116,7 @@
                             produkRows += `
                                 <tr>
                                     <td style="padding:10px; text-align:center; vertical-align:middle;">${index + 1}</td>
-                                    <td style="padding:10px; vertical-align:middle;">${item.NamaProduk ?? '-'}</td>
+                                    <td style="padding:10px; text-align:center; vertical-align:middle;">${item.NamaProduk ?? '-'}</td>
                                     <td style="padding:10px; vertical-align:middle;">${item.Satuan ?? '-'}</td>
                                     <td style="padding:10px; text-align:center; vertical-align:middle;">${item.JumlahUnit ?? '1'}</td>
                                     <td style="padding:10px;">${formatRupiah(item.HargaSatuan)}</td>

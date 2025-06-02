@@ -1,0 +1,530 @@
+﻿body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #B99A81;
+    margin: 0;
+    color: white;
+}
+
+.dashboard-wrapper {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+}
+
+.main-content {
+    padding: 40px 20px 40px 240px; /* padding kiri 240px supaya aman dari sidebar */
+    width: 100%;
+    max-width: 1200px;
+    box-sizing: border-box;
+    margin: 0 auto; /* center */
+}
+
+/* Sidebar */
+.sidebar {
+    position: fixed;
+    width: 180px;
+    background-color: #EDE8D5;
+    padding: 0 20px 20px;
+    height: 100vh;
+    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    overflow-y: auto;
+    transition: left 0.3s ease;
+}
+
+    .sidebar .logo img {
+        width: 70%;
+        display: block;
+        margin: 0 auto 0;
+    }
+
+.nav-links {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+    .nav-links li {
+        margin-bottom: 15px;
+    }
+
+    .nav-links a {
+        text-decoration: none;
+        gap: 10px;
+        color: #2e1d0e;
+        font-weight: bold;
+        display: flex;
+        align-items: center;
+        padding: 10px;
+        border-radius: 5px;
+        transition: all 0.3s ease;
+    }
+
+        .nav-links a:hover {
+            background-color: #D6CDBB;
+            color: #5c3b24;
+            transform: scale(1.03);
+        }
+
+        .nav-links a.active {
+            background-color: #5c3b24;
+            color: white;
+        }
+
+    .nav-links i {
+        font-size: 18px;
+        width: 20px;
+        text-align: center;
+    }
+
+/* Kontainer konten agar tidak tertutup sidebar */
+.content-container {
+    margin-left: 200px;
+    padding: 40px;
+}
+
+/* Judul halaman */
+.title {
+    font-size: 28px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    color: #fff;
+    margin-left: -26px; /* geser ke kiri */
+    margin-top: 13px; /* naikkan sedikit */
+}
+
+/* Bar pencarian dan filter */
+.filter-bar {
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-top: 15px;
+    flex-wrap: wrap;
+}
+
+.search-wrapper {
+    position: relative;
+    flex: 1;
+}
+
+.search-input {
+    width: 90%;
+    padding: 10px 15px 10px 40px; /* space untuk icon kiri */
+    border: none;
+    border-radius: 25px;
+    font-size: 14px;
+    background-color: #fff;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+    outline: none;
+    transition: box-shadow 0.3s ease;
+}
+
+    .search-input:focus {
+        box-shadow: 0 0 0 3px rgba(92, 59, 36, 0.2);
+    }
+
+.search-icon {
+    position: absolute;
+    top: 50%;
+    left: 15px;
+    transform: translateY(-50%);
+    color: #888;
+    font-size: 16px;
+}
+
+/* Tombol filter dan tanggal */
+.date-filter,
+.filter-button {
+    background-color: #5c3b24;
+    border: 1px solid #D6CDBB;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 25px;
+    font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+    .date-filter:hover,
+    .filter-button:hover {
+        background-color: #7a4e26;
+    }
+
+/* Bagian tabel */
+.table-section {
+    margin-top: 60px;
+}
+
+.table-container {
+    background-color: #F5F1E3;
+    padding: 20px;
+    border-radius: 10px;
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.2);
+    overflow-x: auto;
+    max-width: 100%;
+    margin: 0;
+}
+
+.transaction-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #B99A81;
+    color: black;
+    table-layout: auto;
+}
+
+    .transaction-table th,
+    .transaction-table td {
+        padding: 10px 15px;
+        text-align: left;
+        border-bottom: 1px solid #ccc;
+    }
+
+    .transaction-table th {
+        background-color: #5c3b24;
+        color: white;
+        text-align: center
+    }
+
+    .transaction-table td {
+        background-color: white;
+        color: black;
+        text-align: center;
+        padding: 10px 15px;
+        border-bottom: 1px solid #ccc
+    }
+
+        /* Label status */
+        .transaction-table td span {
+            display: inline-block;
+            padding: 5px 10px;
+            border-radius: 10px;
+            color: white;
+            font-weight: 600;
+            font-size: 14px;
+        }
+
+.invoice-button i {
+    color: #2e1d0e;
+    background-color: #d6cdbb;
+    padding: 6px;
+    border-radius: 5px;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+}
+
+    .invoice-button i:hover {
+        background-color: #b8aa94;
+        transform: scale(1.2);
+    }
+
+.invoice-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 5px;
+}
+
+/* Modal Overlay */
+.invoice-modal {
+    position: fixed;
+    z-index: 1100;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    display: none; /* Defaultnya sembunyi, saat tampil pakai style.display = "flex" */
+    justify-content: center;
+    align-items: center;
+    box-sizing: border-box;
+    pointer-events: auto;
+}
+
+
+.invoice-modal-content {
+    background-color: #ad8e76; /* coklat lembut */
+    color: #ffffff; /* semua tulisan putih */
+    border-radius: 16px;
+    width: 700px;
+    max-width: 95%;
+    padding: 30px 40px;
+    box-sizing: border-box;
+    position: relative;
+    box-shadow: 0 0 15px rgba(0,0,0,0.3);
+    font-size: 1rem;
+    overflow-y: auto;
+    max-height: 95vh;
+}
+
+    .invoice-modal-content::-webkit-scrollbar {
+        width: 8px;
+    }
+
+    .invoice-modal-content::-webkit-scrollbar-thumb {
+        background-color: rgba(255, 255, 255, 0.3);
+        border-radius: 4px;
+    }
+
+
+/* Close button */
+.close-modal {
+    position: absolute;
+    top: 15px;
+    right: 20px;
+    font-size: 2rem;
+    font-weight: bold;
+    color: #ffffff;
+    cursor: pointer;
+    transition: color 0.3s ease;
+}
+
+    .close-modal:hover {
+        color: #e74c3c; /* ganti warna hover ke merah lembut */
+    }
+
+/* Header inside modal (h2) */
+.invoice-modal-content h2 {
+    margin-top: 0;
+    margin-bottom: 0.5rem;
+    color: #ffffff;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.invoice-modal-content p,
+.invoice-modal-content > div[style*="display: flex"],
+.invoice-modal-content strong {
+    color: #ffffff;
+}
+
+
+/* Paragraph styling */
+.invoice-modal-content p {
+    color: white;
+    font-size: 0.9rem;
+    margin-bottom: 20px;
+}
+/* Info section container */
+.invoice-modal-content > div[style*="display: flex"] {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 24px;
+    font-size: 0.9rem;
+    color: #ffffff; /* ganti jadi putih supaya teks info jadi putih */
+}
+
+    /* Info columns */
+    .invoice-modal-content > div[style*="display: flex"] > div {
+        width: 48%;
+    }
+
+/* Strong inside info */
+.invoice-modal-content strong {
+    display: block;
+    margin-bottom: 6px;
+    color: #ffffff; /* pastikan strong juga putih */
+}
+
+/* Horizontal rule */
+.invoice-modal-content hr {
+    border: none;
+    border-top: 1px solid #f2e9db88;
+    margin: 20px 0;
+}
+
+.invoice-modal-content table,
+.invoice-modal-content th,
+.invoice-modal-content td {
+    color: #ffffff;
+}
+
+/* Table styling */
+.invoice-modal-content table {
+    width: 100%;
+    border-collapse: collapse; /* gunakan collapse agar padding antar sel lebih konsisten */
+    background-color: #EDE8D5;
+    color: #6b4a2e;
+    font-size: 0.9rem;
+    border-radius: 8px;
+    padding: 0; /* hilangkan padding di tabel langsung */
+    margin-top: 10px;
+    table-layout: fixed;
+}
+
+.invoice-modal-content th,
+.invoice-modal-content td {
+    padding: 10px 14px; /* padding horizontal yang cukup */
+    text-align: center;
+    vertical-align: middle;
+    white-space: nowrap;
+    max-width: 150px;
+}
+
+.invoice-modal-content th {
+    padding: 10px 14px;
+    font-weight: bold;
+    text-align: center;
+    color: #6b4a2e;
+    vertical-align: middle;
+    border-bottom: 1px solid rgba(107, 74, 46, 0.2);
+}
+
+.invoice-modal-content td {
+    padding: 10px 14px;
+    color: #6b4a2e;
+    text-align: center;
+    vertical-align: middle;
+}
+
+    .invoice-modal-content td:nth-child(2) {
+        text-align: right;
+        white-space: nowrap;
+        padding-right: 14px;
+    }
+
+    .invoice-modal-content td:nth-child(5), /* Harga */
+    .invoice-modal-content td:nth-child(6) /* Total */ {
+        white-space: nowrap;
+        max-width: 120px;
+        text-align: center; /* Harga biasanya rata kanan */
+        font-weight: bold;
+    }
+
+/* Agar header juga rapi */
+.invoice-modal-content th:nth-child(5),
+.invoice-modal-content th:nth-child(6) {
+    text-align: center;
+}
+
+/* Total row */
+.invoice-modal-content strong {
+    font-weight: 700;
+}
+
+/* Tombol invoice di tabel utama */
+.invoice-button {
+    background-color: transparent;
+    border: none;
+    cursor: pointer;
+    color: #6b4a2e;
+    font-size: 1.2rem;
+    transition: color 0.3s ease;
+}
+
+    .invoice-button:hover {
+        color: #ad8e76;
+    }
+
+.invoice-table-wrapper {
+    padding: 10px 30px;
+    box-sizing: border-box;
+}
+
+.subtotal-label {
+    color: #6b4a2e; /* warna coklat sama dengan teks tabel */
+    text-align: center;
+    vertical-align: middle;
+}
+
+.subtotal-value {
+    color: #6b4a2e; /* warna coklat sama dengan teks tabel */
+    text-align: center;
+    vertical-align: middle;
+}
+
+.btn-print, .btn-close {
+    font-size: 14px;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 8px;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    min-width: 100px;
+    height: auto;
+}
+
+.btn-print {
+    background-color: #28a745; /* Hijau */
+}
+
+    .btn-print:hover {
+        background-color: #218838;
+    }
+
+.btn-close {
+    background-color: #dc3545; /* Merah */
+}
+
+    .btn-close:hover {
+        background-color: #c82333;
+    }
+
+.view-proof-button {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    margin-right: 5px;
+    padding: 0; /* tambahkan untuk menghindari area klik yang luas */
+}
+
+    .view-proof-button i {
+        color: #2e1d0e;
+        background-color: #d6cdbb;
+        padding: 6px;
+        border-radius: 5px;
+        transition: background-color 0.3s ease, transform 0.2s ease;
+    }
+
+        .view-proof-button i:hover {
+            background-color: #b8aa94;
+            transform: scale(1.1); /* cukup sedikit agar tidak terlalu besar */
+        }
+
+
+.invoice-card-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    margin: 20px 0;
+    justify-content: space-between;
+}
+
+.invoice-card {
+    background-color: #EDE8D5;
+    border: 1px solid #ccc;
+    border-radius: 10px;
+    padding: 20px;
+    flex: 1;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    color: #6b4a2e;
+    min-width: 250px;
+}
+
+    .invoice-card h4 {
+        margin-top: 0;
+        font-size: 16px;
+        font-weight: bold;
+        color: #6b4a2e;
+    }
+
+    .invoice-card p {
+        color: #6b4a2e;
+    }
+
+.invoice-modal-content table th:nth-child(1), /* No */
+.invoice-modal-content table th:nth-child(3), /* Satuan */
+.invoice-modal-content table th:nth-child(4) /* Jumlah */ {
+    width: 7%;
+}

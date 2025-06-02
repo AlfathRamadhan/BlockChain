@@ -1,0 +1,85 @@
+﻿@model BlockChain.Models.EditProfileViewModel
+@{
+    Layout = null;
+}
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Profil</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/distributorprofil.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    <partial name="_SidebarDistributor" />
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Profil</h2>
+            <div class="profile-container">
+                <div class="profile-header">
+                    <div class="logo-title" style="display:flex; align-items:center; gap:15px;">
+                        <img src="@(!string.IsNullOrEmpty(Model.LogoPath) ? Url.Content(Model.LogoPath) : Url.Content("~/images/logo.png"))"
+                             alt="Logo Toko" class="profile-logo"
+                             style="width:80px; height:80px; object-fit:contain; border-radius:8px;" />
+                        <h3>@Model.NamaToko</h3>
+                    </div>
+                    <a asp-controller="Profil" asp-action="EditProfile" class="edit-btn">Edit</a>
+                </div>
+                @if (TempData["Success"] != null)
+                {
+                    <div class="alert alert-success">
+                        @TempData["Success"]
+                    </div>
+                }
+                <hr />
+                <div class="profile-form">
+                    <div class="profile-group">
+                        <label>Nama Toko</label>
+                        <input asp-for="NamaToko" class="form-control" readonly />
+                    </div>
+                    <div class="profile-group">
+                        <label>Nama Lengkap</label>
+                        <input asp-for="NamaLengkap" class="form-control" readonly />
+                    </div>
+                    <div class="profile-group">
+                        <label>No HP</label>
+                        <input asp-for="NoHp" class="form-control" readonly />
+                    </div>
+                    <div class="profile-group">
+                        <label>Email</label>
+                        <input asp-for="Email" class="form-control" readonly />
+                    </div>
+                    <div class="profile-group">
+                        <label>Bank</label>
+                        <input asp-for="Bank" class="form-control" readonly />
+                    </div>
+                    <div class="profile-group">
+                        <label>Nomor Rekening</label>
+                        <input asp-for="NoRekening" class="form-control" readonly />
+                    </div>
+                    <div class="profile-group">
+                        <label>Username</label>
+                        <input asp-for="Username" class="form-control" readonly />
+                    </div>
+                    <div class="profile-group">
+                        <label>Password</label>
+                        <input type="password" value="********" class="form-control" readonly />
+                    </div>
+                </div>
+                <div class="profile-row">
+                    <div class="profile-group">
+                        <label>Deskripsi</label>
+                        <textarea asp-for="Deskripsi" class="form-control" rows="4" readonly></textarea>
+                    </div>
+                    <div class="profile-group">
+                        <label>Alamat</label>
+                        <textarea asp-for="Alamat" class="form-control" rows="4" readonly></textarea>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

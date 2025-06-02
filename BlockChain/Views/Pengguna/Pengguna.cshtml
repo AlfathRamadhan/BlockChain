@@ -129,11 +129,11 @@
                 })
                 .then(data => {
                     document.getElementById("modalTitle").innerText = "Edit Pengguna";
-                    document.getElementById("userId").value = data.id;
-                    document.getElementById("Username").value = data.username;
-                    document.getElementById("NamaToko").value = data.namaToko;
+                    document.getElementById("userId").value = data.Id;
+                    document.getElementById("Username").value = data.Username;
+                    document.getElementById("NamaToko").value = data.NamaToko;
                     document.getElementById("KataSandi").value = "";
-                    document.getElementById("Role").value = data.role;
+                    document.getElementById("Role").value = data.Role;
 
                     document.getElementById("userModal").style.display = "block";
                 })
