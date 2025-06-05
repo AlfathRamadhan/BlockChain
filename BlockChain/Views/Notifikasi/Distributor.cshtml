@@ -32,8 +32,12 @@
                     var dayName = notif.Tanggal.ToString("dddd", new System.Globalization.CultureInfo("id-ID"));
                     var fullDate = notif.Tanggal.ToString("dd/MM/yyyy");
                     var jam = notif.Tanggal.ToString("HH:mm");
-                    var notifJson = Newtonsoft.Json.JsonConvert.SerializeObject(notif);
-                    var notifJsonEncoded = Html.Raw(System.Net.WebUtility.HtmlEncode(notifJson));
+                    var jsonOptions = new System.Text.Json.JsonSerializerOptions
+                    {
+                        PropertyNamingPolicy = null
+                    };
+                    var notifJson = System.Text.Json.JsonSerializer.Serialize(notif, jsonOptions);
+
 
                     <div class="notification-item @notif.Role" data-role="@notif.Role">
                         <div class="notification-left" style="display:block;">
@@ -42,8 +46,8 @@
                                 <small>@dayName, @fullDate @jam</small>
                             </div>
                         </div>
-                        <button class="notification-button"
-                                onclick='openModal(@notifJsonEncoded)'>
+
+                        <button class="notification-button" onclick='openModal(this)' data-notif='@Html.Raw(System.Text.Json.JsonSerializer.Serialize(notif, jsonOptions))'>
                             Cek Status
                         </button>
                     </div>
@@ -98,47 +102,51 @@
             });
         }
 
-        function openModal(notif) {
+        function openModal(button) {
+            const notif = JSON.parse(button.getAttribute('data-notif'));
+            console.log("NOTIF DATA:", notif);
+
             const tbody = document.getElementById("produkTableBody");
             const subtotalEl = document.getElementById("subtotalHarga");
             tbody.innerHTML = "";
-            let subtotal = 0;
 
-            const hasProdukData =
-                notif.NamaProduk && notif.NamaProduk.length > 0 &&
-                notif.JumlahDibeli && notif.JumlahDibeli.length > 0;
+            if (Array.isArray(notif.NamaProduk) && notif.NamaProduk.length > 0 && notif.NamaProduk[0] !== "") {
+                let subtotal = 0;
 
-            if (hasProdukData) {
                 for (let i = 0; i < notif.NamaProduk.length; i++) {
-                    const row = document.createElement("tr");
-
-                    const hargaSatuan = notif.HargaSatuan?.[i] || 0;
-                    const jumlah = notif.JumlahDibeli?.[i] || 0;
-                    const total = hargaSatuan * jumlah;
+                    const namaProduk = notif.NamaProduk[i] || "-";
+                    const jumlah = notif.JumlahDibeli?.[i] ?? 0;
+                    const satuan = notif.Satuan?.[i] || "-";
+                    const expired = notif.TanggalExpired?.[i]
+                        ? new Date(notif.TanggalExpired[i]).toLocaleDateString("id-ID")
+                        : "-";
+                    const harga = notif.HargaSatuan?.[i] ?? 0;
+                    const total = harga * jumlah;
                     subtotal += total;
 
+                    const row = document.createElement("tr");
                     row.innerHTML = `
-                        <td>${notif.NamaProduk[i]}</td>
+                        <td>${namaProduk}</td>
                         <td>${jumlah}</td>
-                        <td>${notif.Satuan?.[i] ?? '-'}</td>
-                        <td>${notif.TanggalExpired?.[i] ? new Date(notif.TanggalExpired[i]).toLocaleDateString("id-ID") : '-'}</td>
-                        <td>Rp ${hargaSatuan.toLocaleString("id-ID")}</td>
+                        <td>${satuan}</td>
+                        <td>${expired}</td>
+                        <td>Rp ${harga.toLocaleString("id-ID")}</td>
                         <td>Rp ${total.toLocaleString("id-ID")}</td>
                     `;
-
                     tbody.appendChild(row);
                 }
 
                 subtotalEl.innerHTML = `<strong>Rp ${subtotal.toLocaleString("id-ID")}</strong>`;
             } else {
                 const row = document.createElement("tr");
-                row.innerHTML = `<td colspan="6">${notif.Pesan}</td>`;
+                row.innerHTML = `<td colspan="6">${notif.Pesan || 'Tidak ada detail produk.'}</td>`;
                 tbody.appendChild(row);
                 subtotalEl.innerHTML = `<strong>-</strong>`;
             }
 
             document.getElementById("detailModal").style.display = "block";
         }
+
 
         function closeModal() {
             document.getElementById("detailModal").style.display = "none";

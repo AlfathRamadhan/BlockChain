@@ -19,6 +19,8 @@ namespace BlockChain.Controllers
         // GET: /Katalog/
         public IActionResult Index(string search)
         {
+            var currentUserId = HttpContext.Session.GetInt32("UserId");
+
             var produkList = _context.Inventaris
                 .Include(p => p.User)
                 .AsQueryable();
@@ -142,48 +144,61 @@ namespace BlockChain.Controllers
         // Buat method private untuk proses konfirmasi tanpa return view, biar bisa dipanggil ulang
         private void ProsesKonfirmasi(List<int> selectedIds, Dictionary<int, int> jumlahDibeliParsed)
         {
-            if (selectedIds == null || selectedIds.Count == 0) return;
-
-            var produkTerpilih = _context.Inventaris
-                .Include(p => p.User)
-                .Where(p => selectedIds.Contains(p.Id))
-                .ToList();
-
-            var notifikasiBaru = new Notifikasi
+            try
             {
-                Role = "Owner",
-                Tanggal = DateTime.Now,
-                Pesan = "Gudang telah memilih produk untuk dikonfirmasi",
-                Kategori = "Pembelian"
-            };
+                if (selectedIds == null || selectedIds.Count == 0) return;
 
-            _context.Notifikasi.Add(notifikasiBaru);
-            _context.SaveChanges();
+                var currentUserId = HttpContext.Session.GetInt32("UserId");
+                if (currentUserId == null) return;
 
-            foreach (var produk in produkTerpilih)
-            {
-                int jumlah = jumlahDibeliParsed.ContainsKey(produk.Id) ? jumlahDibeliParsed[produk.Id] : 0;
-                if (jumlah <= 0) continue;
+                var produkTerpilih = _context.Inventaris
+                    .Include(p => p.User)
+                    .Where(p => selectedIds.Contains(p.Id))
+                    .ToList();
 
-                var detail = new NotifikasiPembelianDetail
+                var notifikasiBaru = new Notifikasi
                 {
-                    NotifikasiId = notifikasiBaru.Id,
-                    NamaProduk = produk.NamaProduk,
-                    JumlahDibeli = jumlah,
-                    Satuan = produk.Satuan,
-                    HargaSatuan = produk.HargaSatuan,
-                    TotalHarga = produk.HargaSatuan * jumlah,
-                    Stok = produk.Stok,
-                    TanggalExpired = produk.TanggalExpired
+                    Role = "Owner",
+                    Tanggal = DateTime.Now,
+                    Pesan = "Gudang telah memilih produk untuk dikonfirmasi",
+                    Kategori = "Pembelian",
+                    UserId = currentUserId.Value
                 };
 
-                _context.NotifikasiPembelianDetail.Add(detail);
+                _context.Notifikasi.Add(notifikasiBaru);
+                _context.SaveChanges();
+
+                foreach (var produk in produkTerpilih)
+                {
+                    if (produk.User == null) continue;
+
+                    int jumlah = jumlahDibeliParsed.ContainsKey(produk.Id) ? jumlahDibeliParsed[produk.Id] : 0;
+                    if (jumlah <= 0) continue;
+
+                    var detail = new NotifikasiPembelianDetail
+                    {
+                        NotifikasiId = notifikasiBaru.Id,
+                        NamaProduk = produk.NamaProduk,
+                        JumlahDibeli = jumlah,
+                        Satuan = produk.Satuan,
+                        HargaSatuan = produk.HargaSatuan,
+                        TotalHarga = produk.HargaSatuan * jumlah,
+                        Stok = produk.Stok,
+                        TanggalExpired = produk.TanggalExpired,
+                        DistributorId = produk.UserId // FIX foreign key di sini
+                    };
+
+                    _context.NotifikasiPembelianDetail.Add(detail);
+                }
+
+                _context.SaveChanges();
             }
-
-            _context.SaveChanges();
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error saat simpan notifikasi: {ex.Message}");
+                throw;
+            }
         }
-
-
 
         [HttpGet]
         public JsonResult SearchProduk(string keyword)

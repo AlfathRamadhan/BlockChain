@@ -18,33 +18,39 @@ namespace BlockChain.Controllers
 
         public IActionResult Notifikasi()
         {
-            var username = HttpContext.Session.GetString("Username");
-            if (string.IsNullOrEmpty(username))
+            var userId = HttpContext.Session.GetInt32("UserId");
+            if (userId == null)
                 return RedirectToAction("Login", "Account");
 
             var role = HttpContext.Session.GetString("Role");
 
+
+
+            // Ambil notifikasi non-pembelian (kategori bukan Pembelian dan Pesanan)
             var gabunganNotifikasi = _context.Notifikasi
-                .Where(n => n.Role == role && n.Kategori != "Pembelian")
+                .Where(n => n.Role == role && n.UserId == userId && n.Kategori != "Pembelian" && n.Kategori != "Pesanan")
                 .OrderByDescending(n => n.Tanggal)
+                .Include(n => n.NotifikasiPembelianDetail)
                 .Select(n => new NotifikasiGabunganItemViewModel
                 {
                     Id = n.Id,
                     Tanggal = n.Tanggal,
                     Role = n.Role,
                     Pesan = n.Pesan,
+                    Status = n.Status,
                     IsPembelian = false,
                     TransaksiKeuanganId = null,
-                    NamaProduk = new List<string>(),
-                    Stok = new List<int>(),
-                    Satuan = new List<string>(),
-                    HargaSatuan = new List<decimal>(),
-                    JumlahDibeli = new List<int>(),
-                    TotalHarga = new List<decimal>(),
-                    TanggalExpired = new List<DateTime?>()
+                    NamaProduk = new List<string> { "" },
+                    Stok = new List<int> { 0 },
+                    Satuan = new List<string> { "" },
+                    HargaSatuan = new List<decimal> { 0m },
+                    JumlahDibeli = new List<int> { 0 },
+                    TotalHarga = new List<decimal> { 0m },
+                    TanggalExpired = new List<DateTime?> { null }
                 })
                 .ToList();
 
+            // Ambil notifikasi kategori Pembelian (existing)
             var pembelianNotifikasiList = _context.Notifikasi
                 .Where(n => n.Role == role && n.Kategori == "Pembelian")
                 .OrderByDescending(n => n.Tanggal)
@@ -57,6 +63,7 @@ namespace BlockChain.Controllers
                 Tanggal = n.Tanggal,
                 Role = n.Role,
                 Pesan = n.Pesan,
+                Status = n.Status,
                 IsPembelian = true,
                 TransaksiKeuanganId = n.NotifikasiPembelianDetail?.FirstOrDefault()?.TransaksiKeuanganId,
                 NamaProduk = n.NotifikasiPembelianDetail?.Select(d => d.NamaProduk).ToList() ?? new List<string>(),
@@ -68,9 +75,68 @@ namespace BlockChain.Controllers
                 TanggalExpired = n.NotifikasiPembelianDetail?.Select(d => d.TanggalExpired).ToList() ?? new List<DateTime?>()
             }).ToList();
 
-            int totalProdukPerluKonfirmasi = notifikasiPembelian.Sum(n => n.NamaProduk?.Count ?? 0);
 
+            // Ambil notifikasi kategori Pesanan (untuk Distributor)
+            var pesananNotifikasiList = _context.Notifikasi
+                .Where(n => n.Role == role && n.Kategori == "Pesanan" && n.UserId == userId)
+                .OrderByDescending(n => n.Tanggal)
+                .Include(n => n.NotifikasiPembelianDetail)
+                .ToList();
+
+            var notifikasiPesanan = pesananNotifikasiList.Select(n => new NotifikasiGabunganItemViewModel
+            {
+                Id = n.Id,
+                Tanggal = n.Tanggal,
+                Role = n.Role,
+                Pesan = n.Pesan,
+                Status = n.Status,
+                IsPembelian = true, // bisa set true atau sesuai kebutuhan, supaya detail muncul
+                TransaksiKeuanganId = n.NotifikasiPembelianDetail?.FirstOrDefault()?.TransaksiKeuanganId,
+                NamaProduk = n.NotifikasiPembelianDetail?.Select(d => d.NamaProduk).ToList() ?? new List<string>(),
+                Stok = n.NotifikasiPembelianDetail?.Select(d => d.Stok).ToList() ?? new List<int>(),
+                Satuan = n.NotifikasiPembelianDetail?.Select(d => d.Satuan).ToList() ?? new List<string>(),
+                HargaSatuan = n.NotifikasiPembelianDetail?.Select(d => d.HargaSatuan).ToList() ?? new List<decimal>(),
+                JumlahDibeli = n.NotifikasiPembelianDetail?.Select(d => d.JumlahDibeli).ToList() ?? new List<int>(),
+                TotalHarga = n.NotifikasiPembelianDetail?.Select(d => d.TotalHarga).ToList() ?? new List<decimal>(),
+                TanggalExpired = n.NotifikasiPembelianDetail?.Select(d => d.TanggalExpired).ToList() ?? new List<DateTime?>()
+            }).ToList();
+
+            // Ambil notifikasi kategori Pembelian untuk Gudang
+            var gudangPembelianNotifikasi = _context.Notifikasi
+                .Where(n => n.Role == role && n.Kategori == "Pembelian" && n.UserId == userId)
+                .OrderByDescending(n => n.Tanggal)
+                .Include(n => n.NotifikasiPembelianDetail)
+                .ToList();
+
+            var notifikasiGudangPembelian = gudangPembelianNotifikasi.Select(n => new NotifikasiGabunganItemViewModel
+            {
+                Id = n.Id,
+                Tanggal = n.Tanggal,
+                Role = n.Role,
+                Pesan = n.Pesan,
+                Status = n.Status,
+                IsPembelian = true,
+                TransaksiKeuanganId = n.NotifikasiPembelianDetail?.FirstOrDefault()?.TransaksiKeuanganId,
+                NamaProduk = n.NotifikasiPembelianDetail?.Select(d => d.NamaProduk).ToList() ?? new List<string>(),
+                Stok = n.NotifikasiPembelianDetail?.Select(d => d.Stok).ToList() ?? new List<int>(),
+                Satuan = n.NotifikasiPembelianDetail?.Select(d => d.Satuan).ToList() ?? new List<string>(),
+                HargaSatuan = n.NotifikasiPembelianDetail?.Select(d => d.HargaSatuan).ToList() ?? new List<decimal>(),
+                JumlahDibeli = n.NotifikasiPembelianDetail?.Select(d => d.JumlahDibeli).ToList() ?? new List<int>(),
+                TotalHarga = n.NotifikasiPembelianDetail?.Select(d => d.TotalHarga).ToList() ?? new List<decimal>(),
+                TanggalExpired = n.NotifikasiPembelianDetail?.Select(d => d.TanggalExpired).ToList() ?? new List<DateTime?>()
+            }).ToList();
+
+
+            // Hitung total produk yang perlu konfirmasi
+            int totalProdukPerluKonfirmasi = notifikasiPembelian
+                .Where(n => n.Status != "Dikonfirmasi" && n.Status != "Ditolak")
+                .Sum(n => n.NamaProduk?.Count ?? 0);
+            // Ambil notifikasi kategori Pembelian untuk Gudang (agar detail produk muncul)
+            // Gabungkan semua notifikasi ke satu list
             gabunganNotifikasi.AddRange(notifikasiPembelian);
+            gabunganNotifikasi.AddRange(notifikasiPesanan);
+            gabunganNotifikasi.AddRange(notifikasiGudangPembelian);
+
 
             var model = new NotifikasiGabunganViewModel
             {
@@ -95,78 +161,108 @@ namespace BlockChain.Controllers
             var notif = _context.Notifikasi
                 .Include(n => n.NotifikasiPembelianDetail)
                 .FirstOrDefault(n => n.Id == id);
+
             if (notif == null)
-                return NotFound();
+                return Json(new { success = false, message = "Notifikasi tidak ditemukan." });
 
             notif.Status = "Dikonfirmasi";
-            _context.SaveChanges();
 
-            // Tambahkan notifikasi ke Gudang beserta detail pembelian
-            var notifGudang = new Notifikasi
+            var gudangUser = _context.Users.FirstOrDefault(u => u.Role == "Gudang");
+            if (gudangUser == null)
+                return Json(new { success = false, message = "User  Gudang tidak ditemukan." });
+
+            try
             {
-                Role = "Gudang",
-                Kategori = "Pembelian", // penting agar dikenali sebagai pembelian
-                Pesan = $"Pembelian dengan ID {id} telah dikonfirmasi oleh Owner.",
-                Tanggal = DateTime.Now,
-                Status = "Dikonfirmasi" // opsional, tapi baik untuk kejelasan
-            };
+                _context.SaveChanges();
 
-            _context.Notifikasi.Add(notifGudang);
-            _context.SaveChanges(); // untuk mendapatkan notifGudang.Id
-
-            // Salin detail pembelian dari notif Owner ke notifGudang
-            foreach (var detail in notif.NotifikasiPembelianDetail)
-            {
-                var detailBaru = new NotifikasiPembelianDetail
+                // Notifikasi ke Gudang
+                var notifGudang = new Notifikasi
                 {
-                    NotifikasiId = notifGudang.Id,
-                    TransaksiKeuanganId = detail.TransaksiKeuanganId,
-                    NamaProduk = detail.NamaProduk,
-                    Stok = detail.Stok,
-                    Satuan = detail.Satuan,
-                    HargaSatuan = detail.HargaSatuan,
-                    JumlahDibeli = detail.JumlahDibeli,
-                    TotalHarga = detail.TotalHarga,
-                    TanggalExpired = detail.TanggalExpired
+                    Role = "Gudang",
+                    Kategori = "Pembelian",
+                    Pesan = $"Pembelian dengan ID {id} telah dikonfirmasi oleh Owner",
+                    Tanggal = DateTime.Now,
+                    Status = "Dikonfirmasi",
+                    UserId = gudangUser.Id
                 };
-                _context.NotifikasiPembelianDetail.Add(detailBaru);
-            }
+                _context.Notifikasi.Add(notifGudang);
+                _context.SaveChanges(); // Simpan untuk dapatkan notifGudang.Id
 
-            _context.SaveChanges();
-
-            var notifDistributor = new Notifikasi
-            {
-                Role = "Distributor",
-                Kategori = "Pesanan",
-                Pesan = $"Pesanan Terbaru.",
-                Tanggal = DateTime.Now,
-                Status = "Dikonfirmasi"
-            };
-            _context.Notifikasi.Add(notifDistributor);
-            _context.SaveChanges();
-
-            foreach (var detail in notif.NotifikasiPembelianDetail)
-            {
-                var detailBaru = new NotifikasiPembelianDetail
+                // Salin detail ke notifikasi gudang
+                if (notif.NotifikasiPembelianDetail != null && notif.NotifikasiPembelianDetail.Any())
                 {
-                    NotifikasiId = notifDistributor.Id,
-                    TransaksiKeuanganId = detail.TransaksiKeuanganId,
-                    NamaProduk = detail.NamaProduk,
-                    Stok = detail.Stok,
-                    Satuan = detail.Satuan,
-                    HargaSatuan = detail.HargaSatuan,
-                    JumlahDibeli = detail.JumlahDibeli,
-                    TotalHarga = detail.TotalHarga,
-                    TanggalExpired = detail.TanggalExpired
-                };
-                _context.NotifikasiPembelianDetail.Add(detailBaru);
+                    foreach (var detail in notif.NotifikasiPembelianDetail)
+                    {
+                        var detailBaru = new NotifikasiPembelianDetail
+                        {
+                            NotifikasiId = notifGudang.Id,
+                            TransaksiKeuanganId = detail.TransaksiKeuanganId,
+                            NamaProduk = detail.NamaProduk,
+                            Stok = detail.Stok,
+                            Satuan = detail.Satuan,
+                            HargaSatuan = detail.HargaSatuan,
+                            JumlahDibeli = detail.JumlahDibeli,
+                            TotalHarga = detail.TotalHarga,
+                            TanggalExpired = detail.TanggalExpired
+                        };
+                        _context.NotifikasiPembelianDetail.Add(detailBaru);
+                    }
+                    _context.SaveChanges(); // Simpan detail produk yang baru ditambahkan
+                }
+
+                // Kirim notifikasi ke distributor yang terkait
+                var distributorGroups = notif.NotifikasiPembelianDetail
+                    .GroupBy(d => d.DistributorId)
+                    .ToList();
+
+                foreach (var group in distributorGroups)
+                {
+                    var distributorId = group.Key;
+                    var distributorUser = _context.Users.FirstOrDefault(u => u.Id == distributorId);
+
+                    if (distributorUser == null)
+                        continue;
+
+                    var notifDistributor = new Notifikasi
+                    {
+                        Role = "Distributor",
+                        Kategori = "Pesanan",
+                        Pesan = "Pesanan terbaru untuk toko Anda.",
+                        Tanggal = DateTime.Now,
+                        Status = "Dikonfirmasi",
+                        UserId = distributorUser.Id
+                    };
+                    _context.Notifikasi.Add(notifDistributor);
+                    _context.SaveChanges();
+
+                    foreach (var detail in group) // hanya detail milik distributor ini
+                    {
+                        var detailBaru = new NotifikasiPembelianDetail
+                        {
+                            NotifikasiId = notifDistributor.Id,
+                            TransaksiKeuanganId = detail.TransaksiKeuanganId,
+                            NamaProduk = detail.NamaProduk,
+                            Stok = detail.Stok,
+                            Satuan = detail.Satuan,
+                            HargaSatuan = detail.HargaSatuan,
+                            JumlahDibeli = detail.JumlahDibeli,
+                            TotalHarga = detail.TotalHarga,
+                            TanggalExpired = detail.TanggalExpired
+                        };
+                        _context.NotifikasiPembelianDetail.Add(detailBaru);
+                    }
+                    _context.SaveChanges();
+                }
+
+                // ✅ return di akhir method
+                return Json(new { success = true, message = "Pembelian berhasil dikonfirmasi dan dikirim ke Gudang dan Distributor." });
             }
-
-            _context.SaveChanges();
-
-
-            return Ok(new { message = "Pembelian dikonfirmasi dan notifikasi dikirim ke Gudang dan Distributor." });
+            catch (Exception ex)
+            {
+                return Json(new { success = false, message = "Gagal mengkonfirmasi pembelian: " + ex.Message });
+            }
         }
+
 
         [HttpPost]
         [ValidateAntiForgeryToken]
@@ -177,24 +273,22 @@ namespace BlockChain.Controllers
                 .FirstOrDefault(n => n.Id == id);
 
             if (notif == null)
-                return NotFound();
+                return Json(new { success = false, message = "Notifikasi tidak ditemukan." });
 
             notif.Status = "Ditolak";
             _context.SaveChanges();
 
-            // Buat notifikasi ke Gudang
             var notifGudang = new Notifikasi
             {
                 Role = "Gudang",
                 Kategori = "Pembelian",
-                Pesan = $"Pembelian dengan ID {id} telah DITOLAK oleh Owner.",
+                Pesan = $"Pembelian dengan ID {id} telah Ditolak oleh Owner",
                 Tanggal = DateTime.Now
             };
 
             _context.Notifikasi.Add(notifGudang);
             _context.SaveChanges();
 
-            // Salin detail produk ke notifikasi baru
             if (notif.NotifikasiPembelianDetail != null)
             {
                 var detailCopy = notif.NotifikasiPembelianDetail.Select(d => new NotifikasiPembelianDetail
@@ -214,7 +308,7 @@ namespace BlockChain.Controllers
                 _context.SaveChanges();
             }
 
-            return Ok(new { message = "Pembelian ditolak dan notifikasi dikirim ke Gudang dengan detail produk." });
+            return Json(new { success = true, message = "Pembelian berhasil ditolak dan dikirim ke Gudang." });
         }
 
 

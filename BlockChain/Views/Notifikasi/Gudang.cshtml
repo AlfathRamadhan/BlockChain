@@ -1,4 +1,6 @@
 ﻿@model BlockChain.Models.NotifikasiGabunganViewModel
+@using System.Text.Encodings.Web
+
 @{
     Layout = null;
 }
@@ -32,8 +34,29 @@
                     var dayName = notif.Tanggal.ToString("dddd", new System.Globalization.CultureInfo("id-ID"));
                     var fullDate = notif.Tanggal.ToString("dd/MM/yyyy");
                     var jam = notif.Tanggal.ToString("HH:mm");
-                    var notifJson = Newtonsoft.Json.JsonConvert.SerializeObject(notif);
-                    var notifJsonEncoded = Html.Raw(System.Net.WebUtility.HtmlEncode(notifJson));
+                    var produkList = (notif.NamaProduk != null && notif.NamaProduk.Any())
+                    ? Enumerable.Range(0, notif.NamaProduk.Count).Select(i => new Dictionary<string, object>
+                    {
+                        ["NamaProduk"] = notif.NamaProduk[i],
+                        ["Jumlah"] = notif.JumlahDibeli?[i] ?? 0,
+                        ["Satuan"] = notif.Satuan?[i] ?? "-",
+                        ["TanggalExpired"] = notif.TanggalExpired?[i]?.ToString("yyyy-MM-dd") ?? "",
+                        ["HargaSatuan"] = notif.HargaSatuan?[i] ?? 0
+                    }).ToList()
+                    : new List<Dictionary<string, object>>();
+
+
+                    var notifJson = Newtonsoft.Json.JsonConvert.SerializeObject(new
+                    {
+                        notif.Id,
+                        notif.Pesan,
+                        notif.Tanggal,
+                        ProdukList = produkList
+                    }, new Newtonsoft.Json.JsonSerializerSettings
+                    {
+                        ReferenceLoopHandling = Newtonsoft.Json.ReferenceLoopHandling.Ignore
+                    });
+
 
                     <div class="notification-item @notif.Role" data-role="@notif.Role">
                         <div class="notification-left" style="display:block;">
@@ -42,8 +65,12 @@
                                 <small>@dayName, @fullDate @jam</small>
                             </div>
                         </div>
+                        <p>@(notif.NamaProduk != null ? string.Join(", ", notif.NamaProduk) : "Tidak ada produk")</p>
+
                         <button class="notification-button"
-                                onclick='openModal(@notifJsonEncoded)'>
+                                type="button"
+                                data-notif='@Html.Raw(notifJson)'
+                                onclick="openModalFromElement(this)">
                             Cek Status
                         </button>
                     </div>
@@ -97,48 +124,48 @@
                 }
             });
         }
-         function openModal(notif) {
+        function openModal(notif) {
+            const produkList = notif.ProdukList || [];
+
+            console.log("Data notif:", notif);
+            console.log("ProdukList yang diterima:", produkList);
+
             const tbody = document.getElementById("produkTableBody");
             const subtotalEl = document.getElementById("subtotalHarga");
             tbody.innerHTML = "";
             let subtotal = 0;
 
-            const hasProdukData =
-                notif.NamaProduk && notif.NamaProduk.length > 0 &&
-                notif.JumlahDibeli && notif.JumlahDibeli.length > 0;
-
-            if (hasProdukData) {
-                for (let i = 0; i < notif.NamaProduk.length; i++) {
-                    const row = document.createElement("tr");
-
-                    const hargaSatuan = notif.HargaSatuan?.[i] || 0;
-                    const jumlah = notif.JumlahDibeli?.[i] || 0;
+            if (produkList.length > 0) {
+                produkList.forEach(p => {
+                    const nama = p.NamaProduk || '-';
+                    const jumlah = p.Jumlah || 0;
+                    const satuan = p.Satuan || '-';
+                    const expired = p.TanggalExpired ? new Date(p.TanggalExpired).toLocaleDateString("id-ID") : '-';
+                    const hargaSatuan = p.HargaSatuan || 0;
                     const total = hargaSatuan * jumlah;
                     subtotal += total;
 
+                    const row = document.createElement("tr");
                     row.innerHTML = `
-                        <td>${notif.NamaProduk[i]}</td>
+                        <td>${nama}</td>
                         <td>${jumlah}</td>
-                        <td>${notif.Satuan?.[i] ?? '-'}</td>
-                        <td>${notif.TanggalExpired?.[i] ? new Date(notif.TanggalExpired[i]).toLocaleDateString("id-ID") : '-'}</td>
+                        <td>${satuan}</td>
+                        <td>${expired}</td>
                         <td>Rp ${hargaSatuan.toLocaleString("id-ID")}</td>
                         <td>Rp ${total.toLocaleString("id-ID")}</td>
                     `;
-
                     tbody.appendChild(row);
-                }
-
+                });
                 subtotalEl.innerHTML = `<strong>Rp ${subtotal.toLocaleString("id-ID")}</strong>`;
             } else {
                 const row = document.createElement("tr");
-                row.innerHTML = `<td colspan="6">${notif.Pesan}</td>`;
+                row.innerHTML = `<td colspan="6">Tidak ada produk yang tersedia untuk ditampilkan.</td>`;
                 tbody.appendChild(row);
                 subtotalEl.innerHTML = `<strong>-</strong>`;
             }
 
             document.getElementById("detailModal").style.display = "block";
         }
-
 
             function closeModal() {
                 document.getElementById("detailModal").style.display = "none";
@@ -150,6 +177,16 @@
                     closeModal();
                 }
             }
+
+                    function openModalFromElement(button) {
+            try {
+                const notif = JSON.parse(button.dataset.notif);
+                openModal(notif);
+            } catch (err) {
+                console.error("Gagal parse data-notif:", err, button.dataset.notif);
+            }
+        }
+
     </script>
 </body>
 </html>

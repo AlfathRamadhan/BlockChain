@@ -286,6 +286,52 @@
     color: white;
 }
 
+.toast-notification {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    min-width: 250px;
+    padding: 15px 25px;
+    color: white;
+    font-weight: 600;
+    border-radius: 5px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    display: none;
+    z-index: 9999;
+}
+
+
+.toast-notification {
+    position: fixed;
+    bottom: 20px;
+    right: 30px;
+    background-color: #323232;
+    color: #fff;
+    padding: 12px 20px;
+    border-radius: 8px;
+    font-size: 14px;
+    z-index: 9999;
+    display: none;
+    animation: fadeInOut 4s ease-in-out;
+}
+
+@keyframes fadeInOut {
+    0% {
+        opacity: 0;
+    }
+
+    10% {
+        opacity: 1;
+    }
+
+    90% {
+        opacity: 1;
+    }
+
+    100% {
+        opacity: 0;
+    }
+}
 
 /* Responsive untuk Mobile */
 @media (max-width: 768px) {

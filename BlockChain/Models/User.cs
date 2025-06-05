@@ -50,6 +50,8 @@ namespace BlockChain.Models
         public string PasswordBaru { get; set; }
         public string? Bank { get; set; }
 
+        public ICollection<Notifikasi> NotifikasiList { get; set; }
+
         public ICollection<Inventaris> InventarisList { get; set; }
         public ICollection<TransaksiKeuangan> TransaksiKeuangan { get; set; }
 

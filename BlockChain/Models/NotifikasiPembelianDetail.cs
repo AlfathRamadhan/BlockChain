@@ -17,6 +17,10 @@ namespace BlockChain.Models
         [NotMapped]
         public int? TransaksiKeuanganId { get; set; }
 
+        public int DistributorId { get; set; }
+
+        // Relasi ke User (Distributor)
+        public User Distributor { get; set; }
 
 
         public Notifikasi Notifikasi { get; set; }

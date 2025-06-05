@@ -12,6 +12,7 @@
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/ownernotifikasi.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script> <!-- SweetAlert2 -->
 </head>
 <body>
     <partial name="Sidebar" />
@@ -91,6 +92,7 @@
 
     <!-- Modal -->
     <div id="detailModal" class="modal">
+        @Html.AntiForgeryToken()
         <div class="modal-content">
             <span class="close" onclick="closeModal()">&times;</span>
             <h3 class="modal-title">Detail Konfirmasi</h3>
@@ -122,6 +124,7 @@
         </div>
     </div>
 
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <script>
         let currentNotifId = null;
 
@@ -211,16 +214,34 @@
             })
             .then(response => {
                 if (response.ok) {
-                    // Hapus elemen notifikasi dari UI
                     const notifDiv = document.querySelector(`.notification-item[data-id='${id}']`);
                     if (notifDiv) notifDiv.remove();
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Sukses',
+                        text: 'Notifikasi berhasil dihapus.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 } else {
-                    alert("Gagal menghapus notifikasi.");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Gagal menghapus notifikasi.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 }
             })
             .catch(error => {
                 console.error("Error:", error);
-                alert("Terjadi kesalahan saat menghapus notifikasi.");
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan saat menghapus notifikasi.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
             });
         }
 
@@ -230,52 +251,100 @@
         }
 
         function konfirmasiPembelian() {
-            if (!currentNotifId) return alert("Notifikasi tidak valid.");
+            if (!currentNotifId) return Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Notifikasi tidak valid.',
+                timer: 2000,
+                showConfirmButton: false
+            });
 
             fetch(`/Notifikasi/KonfirmasiPembelian/${currentNotifId}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'RequestVerificationToken': getAntiForgeryToken()
-                },
-                body: JSON.stringify({ id: currentNotifId })
+                }
             })
             .then(response => {
                 if (response.ok) {
-                    alert("Pembelian dikonfirmasi!");
                     closeModal();
-                    removeNotificationFromUI(currentNotifId);
+                    removeNotificationById(currentNotifId);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Pembelian berhasil dikonfirmasi.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 } else {
-                    alert("Gagal konfirmasi pembelian.");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Gagal mengonfirmasi pembelian.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 }
             })
-            .catch(() => alert("Terjadi kesalahan saat konfirmasi pembelian."));
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan saat mengonfirmasi pembelian.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            });
         }
 
         function tolakPembelian() {
-            if (!currentNotifId) return alert("Notifikasi tidak valid.");
+            if (!currentNotifId) return Swal.fire({
+                icon: 'error',
+                title: 'Error',
+                text: 'Notifikasi tidak valid.',
+                timer: 2000,
+                showConfirmButton: false
+            });
 
             fetch(`/Notifikasi/TolakPembelian/${currentNotifId}`, {
                 method: 'POST',
                 headers: {
-                    'Content-Type': 'application/json',
                     'RequestVerificationToken': getAntiForgeryToken()
-                },
-                body: JSON.stringify({ id: currentNotifId })
+                }
             })
             .then(response => {
                 if (response.ok) {
-                    alert("Pembelian ditolak!");
                     closeModal();
-                    removeNotificationFromUI(currentNotifId);
+                    removeNotificationById(currentNotifId);
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Berhasil',
+                        text: 'Pembelian berhasil ditolak.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 } else {
-                    alert("Gagal menolak pembelian.");
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Error',
+                        text: 'Gagal menolak pembelian.',
+                        timer: 2000,
+                        showConfirmButton: false
+                    });
                 }
             })
-            .catch(() => alert("Terjadi kesalahan saat menolak pembelian."));
+            .catch(() => {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Error',
+                    text: 'Terjadi kesalahan saat menolak pembelian.',
+                    timer: 2000,
+                    showConfirmButton: false
+                });
+            });
         }
 
-        function removeNotificationFromUI(id) {
+        function removeNotificationById(id) {
             const notifDiv = document.querySelector(`.notification-item[data-id='${id}']`);
             if (notifDiv) notifDiv.remove();
         }

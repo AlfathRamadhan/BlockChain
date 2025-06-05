@@ -27,6 +27,12 @@ namespace BlockChain.Models
         [MaxLength(50)]
         public string? Status { get; set; }
 
+        public int? UserId { get; set; } // foreign key
+
+        [ForeignKey("UserId")]
+        public User User { get; set; } // navigational property
+
+
         [NotMapped]
         public int? TransaksiKeuanganId { get; set; }
 

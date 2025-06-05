@@ -96,6 +96,7 @@
                             <option value="Distributor">Distributor</option>
                             <option value="Gudang">Gudang</option>
                             <option value="Keuangan">Keuangan</option>
+                            <option value="Owner">Owner</option>
                         </select>
 
                         <button type="submit" class="save-button">Simpan</button>
@@ -115,12 +116,14 @@
     </div>
 
     <script>
-        function openAddModal() {
-            document.getElementById("userForm").reset();
-            document.getElementById("modalTitle").innerText = "Tambah Pengguna";
-            document.getElementById("userModal").style.display = "block";
-        }
+        document.addEventListener("DOMContentLoaded", function() {
+            function openAddModal() {
+                document.getElementById("userForm").reset();
+                document.getElementById("modalTitle").innerText = "Tambah Pengguna";
+                document.getElementById("userModal").style.display = "block";
+            }
 
+            window.openAddModal = openAddModal; // supaya bisa dipanggil dari onclick inline
         function openEditModal(id) {
             fetch(`/Pengguna/GetUserById/${id}`)
                 .then(response => {
@@ -128,86 +131,98 @@
                     return response.json();
                 })
                 .then(data => {
+                    console.log(data); // pastikan struktur key-nya benar
+
                     document.getElementById("modalTitle").innerText = "Edit Pengguna";
-                    document.getElementById("userId").value = data.Id;
-                    document.getElementById("Username").value = data.Username;
-                    document.getElementById("NamaToko").value = data.NamaToko;
-                    document.getElementById("KataSandi").value = "";
-                    document.getElementById("Role").value = data.Role;
+                    document.getElementById("userId").value = data.id || "";
+                    document.getElementById("Username").value = data.username || "";
+                    document.getElementById("NamaToko").value = data.namaToko || "";
+                    document.getElementById("KataSandi").value = ""; // tetap kosong
+                    document.getElementById("Role").value = data.role || "";
 
                     document.getElementById("userModal").style.display = "block";
                 })
                 .catch(error => alert("Terjadi kesalahan: " + error.message));
         }
+                    window.openEditModal = openEditModal; // supaya bisa dipanggil dari onclick inline
 
-        function closeModal() {
-            document.getElementById("userModal").style.display = "none";
-        }
-
-        let deleteId = 0;
-        function confirmDelete(id) {
-            deleteId = id;
-            document.getElementById("confirmModal").style.display = "block";
-        }
-
-        function deleteConfirmed() {
-            window.location.href = '/Pengguna/Hapus/' + deleteId;
-        }
-
-        function closeConfirmModal() {
-            document.getElementById("confirmModal").style.display = "none";
-        }
-
-               document.getElementById("userForm").addEventListener("submit", function (e) {
-            const role = document.getElementById("Role").value;
-            const namaToko = document.getElementById("NamaToko").value;
-            const userId = document.getElementById("userId").value;
-            const password = document.getElementById("KataSandi").value;
-
-            if (role === "Distributor" && namaToko.trim() === "") {
-                alert("Nama Toko wajib diisi untuk Distributor.");
-                e.preventDefault();
-                return;
+            function closeModal() {
+                document.getElementById("userModal").style.display = "none";
             }
 
-            // Jika tambah (userId kosong), password harus diisi
-            if (!userId || userId == "0") {
-                if (password.trim() === "") {
-                    alert("Kata sandi wajib diisi saat membuat pengguna baru.");
+            window.closeModal = closeModal;
+
+            let deleteId = 0;
+            function confirmDelete(id) {
+                deleteId = id;
+                document.getElementById("confirmModal").style.display = "block";
+            }
+
+            window.confirmDelete = confirmDelete;
+
+            function deleteConfirmed() {
+                window.location.href = '/Pengguna/Hapus/' + deleteId;
+            }
+
+            window.deleteConfirmed = deleteConfirmed;
+
+            function closeConfirmModal() {
+                document.getElementById("confirmModal").style.display = "none";
+            }
+
+            window.closeConfirmModal = closeConfirmModal;
+
+            const userForm = document.getElementById("userForm");
+            userForm.addEventListener("submit", function (e) {
+                const role = document.getElementById("Role").value;
+                const namaToko = document.getElementById("NamaToko").value;
+                const userId = document.getElementById("userId").value;
+                const password = document.getElementById("KataSandi").value;
+
+                if (role === "Distributor" && namaToko.trim() === "") {
+                    alert("Nama Toko wajib diisi untuk Distributor.");
                     e.preventDefault();
+                    return;
                 }
-            }
-        });
 
-        // AJAX search on typing
-        document.getElementById("searchInput").addEventListener("input", function () {
-            const keyword = this.value;
-            fetch(`/Pengguna/FilterPengguna?search=${encodeURIComponent(keyword)}`)
-                .then(response => response.json())
-                .then(data => {
-                    const tbody = document.getElementById("penggunaBody");
-                    let html = "";
-                    let no = 1;
+                if (!userId || userId == "0") {
+                    if (password.trim() === "") {
+                        alert("Kata sandi wajib diisi saat membuat pengguna baru.");
+                        e.preventDefault();
+                    }
+                }
+            });
 
-                    data.forEach(p => {
-                        html += `
-                            <tr>
-                                <td>${no++}</td>
-                                <td>${p.username}</td>
-                                <td>${p.namaToko}</td>
-                                <td>********</td>
-                                <td>${p.role}</td>
-                                <td>
-                                    <button class="edit-button" onclick="openEditModal(${p.id})"><i class="fa-solid fa-pen-to-square"></i></button>
-                                    <button class="delete-button" onclick="confirmDelete(${p.id})"><i class="fa-solid fa-trash-can" style="color: inherit;"></i></button>
-                                </td>
-                            </tr>`;
-                    });
+            document.getElementById("searchInput").addEventListener("input", function () {
+                const keyword = this.value;
+                fetch(`/Pengguna/FilterPengguna?search=${encodeURIComponent(keyword)}`)
+                    .then(response => response.json())
+                    .then(data => {
+                        const tbody = document.getElementById("penggunaBody");
+                        let html = "";
+                        let no = 1;
 
-                    tbody.innerHTML = html;
-                })
-                .catch(error => console.error("Gagal mengambil data:", error));
+                        data.forEach(p => {
+                            html += `
+                                <tr>
+                                    <td>${no++}</td>
+                                    <td>${p.Username}</td>
+                                    <td>${p.NamaToko}</td>
+                                    <td>********</td>
+                                    <td>${p.Role}</td>
+                                    <td>
+                                        <button class="edit-button" onclick="openEditModal(${p.Id})"><i class="fa-solid fa-pen-to-square"></i></button>
+                                        <button class="delete-button" onclick="confirmDelete(${p.Id})"><i class="fa-solid fa-trash-can" style="color: inherit;"></i></button>
+                                    </td>
+                                </tr>`;
+                        });
+
+                        tbody.innerHTML = html;
+                    })
+                    .catch(error => console.error("Gagal mengambil data:", error));
+            });
         });
     </script>
+
 </body>
 </html>

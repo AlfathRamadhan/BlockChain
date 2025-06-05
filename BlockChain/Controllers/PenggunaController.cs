@@ -1,6 +1,7 @@
 ﻿using BlockChain.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
@@ -97,21 +98,22 @@ namespace BlockChain.Controllers
             return RedirectToAction("Pengguna");
         }
 
-        // API untuk ambil data user by ID (untuk modal edit via AJAX)
         [HttpGet]
         public IActionResult GetUserById(int id)
         {
-            if (!IsUserLoggedIn())
-            {
-                return RedirectToAction("Login", "Account"); // Redirect ke halaman login jika tidak ada sesi
-            }
-
             var user = _context.Users.FirstOrDefault(u => u.Id == id);
             if (user == null)
                 return NotFound();
 
-            return Json(user); // kirim dalam format JSON
+            return Json(new
+            {
+                user.Id,
+                user.Username,
+                user.NamaToko,
+                user.Role
+            });
         }
+
 
         // Filter pengguna berdasarkan pencarian
         [HttpGet]
