@@ -130,4 +130,58 @@ public class DataGudangController : Controller
         return Json(new { success = false, message = "Produk tidak ditemukan" });
     }
 
+    [HttpGet]
+    public IActionResult KonfirmasiProduk(List<int> ids)
+    {
+        var produkDipilih = _context.Produk.Where(p => ids.Contains(p.Id)).ToList();
+        return View(produkDipilih);
+    }
+
+    [HttpPost]
+    public IActionResult KonfirmasiProduk(Dictionary<int, int> jumlah)
+    {
+        var produkDetailList = new List<Produk>();
+        int totalProdukDigunakan = 0;
+
+        foreach (var pair in jumlah)
+        {
+            var produk = _context.Produk.FirstOrDefault(p => p.Id == pair.Key);
+            if (produk != null && produk.Stok >= pair.Value)
+            {
+                produk.Stok -= pair.Value;
+
+                // Simpan ke tabel PemakaianProduk
+                var pemakaian = new PemakaianProduk
+                {
+                    ProdukId = produk.Id,
+                    JumlahDigunakan = pair.Value,
+                    TanggalPenggunaan = DateTime.Now
+                };
+                _context.PemakaianProduk.Add(pemakaian);
+
+                totalProdukDigunakan++;
+            }
+        }
+
+        var owner = _context.Users.FirstOrDefault(u => u.Role == "Owner");
+        if (totalProdukDigunakan > 0)
+        {
+            var notif = new Notifikasi
+            {
+                Tanggal = DateTime.Now,
+                Role = "Owner",
+                Pesan = $"Gudang menggunakan {totalProdukDigunakan} produk.",
+                Kategori = "Konfirmasi",
+                UserId = owner.Id,
+                Status = "Konfirmasi"
+            };
+
+            _context.Notifikasi.Add(notif);
+            _context.SaveChanges();
+        }
+
+        return RedirectToAction("Index");
+    }
+
+
 }

@@ -22,5 +22,8 @@ namespace BlockChain.Models
         [Required]
         [DataType(DataType.Date)]
         public DateTime TanggalExpired { get; set; }
+
+        [Required]
+        public string Satuan { get; set; } // Tambahan
     }
 }

@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using BlockChain.Models;
 using System.Globalization;
+using System.Linq;
 
 namespace BlockChain.Controllers
 {
@@ -14,42 +15,72 @@ namespace BlockChain.Controllers
         {
             _context = context;
         }
+
         public IActionResult Dashboard()
         {
-            // Menonaktifkan cache agar data selalu fresh
             Response.Headers["Cache-Control"] = "no-store";
             Response.Headers["Pragma"] = "no-cache";
             Response.Headers["Expires"] = "-1";
 
-            // Cek sesi login
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("Username")))
             {
                 return RedirectToAction("Login", "Account");
             }
 
-            // Ambil jumlah user berdasarkan role dari database
-            var keuanganCount = _context.Users.Count(u => u.Role == "Keuangan");
-            var gudangCount = _context.Users.Count(u => u.Role == "Gudang");
-            var distributorCount = _context.Users.Count(u => u.Role == "Distributor");
-
-            // Ambil 5 produk terbaru dari tabel Produk
             var produkList = _context.Produk
                 .OrderByDescending(p => p.TanggalMasuk)
                 .Take(5)
                 .ToList();
 
-            // Kirim data ke view
-            ViewBag.Keuangan = keuanganCount;
-            ViewBag.Gudang = gudangCount;
-            ViewBag.Distributor = distributorCount;
             ViewBag.DataProduk = produkList;
 
             return View();
         }
-        // Aksi lain yang memerlukan login
+
         public IActionResult AnotherPage()
         {
-            // Cek sesi login
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("Username")))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            return View();
+        }
+
+        public IActionResult GrafikPemakaianProduk()
+        {
+            if (string.IsNullOrEmpty(HttpContext.Session.GetString("Username")))
+            {
+                return RedirectToAction("Login", "Account");
+            }
+
+            return View();
+        }
+
+        [HttpGet]
+        public JsonResult DataPemakaianProduk(int tahun, int bulan)
+        {
+
+            Console.WriteLine($"Masuk ke DataPemakaianProduk: Tahun={tahun}, Bulan={bulan}");
+            var data = _context.PemakaianProduk
+                .Include(p => p.Produk)
+                .Where(p => p.TanggalPenggunaan.Year == tahun && p.TanggalPenggunaan.Month == bulan)
+                .GroupBy(p => p.Produk.Nama)
+                .Select(g => new {
+                    NamaProduk = g.Key,
+                    Total = g.Sum(x => x.JumlahDigunakan)
+                })
+                .ToList();
+            Console.WriteLine("Jumlah Data:" + data.Count);
+
+            return Json(data);
+        }
+
+
+
+
+        public IActionResult GrafikPengeluaranProduk()
+        {
             if (string.IsNullOrEmpty(HttpContext.Session.GetString("Username")))
             {
                 return RedirectToAction("Login", "Account");

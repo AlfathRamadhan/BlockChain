@@ -13,26 +13,51 @@ namespace BlockChain.Controllers
     public class PesananController : Controller
     {
         private readonly ApplicationDbContext _context;
+        private string GenerateNomorPembayaran()
+        {
+            return "PAY-" + DateTime.Now.ToString("yyyyMMddHHmmss");
+        }
+
 
         public PesananController(ApplicationDbContext context)
         {
             _context = context;
         }
 
-        // Menampilkan daftar pesanan milik distributor yang sedang login
         public IActionResult Index()
         {
+            var userIdNullable = HttpContext.Session.GetInt32("UserId");
+            if (!userIdNullable.HasValue)
+                return RedirectToAction("Login", "Account");
 
+            int userId = userIdNullable.Value;
 
-            var username = User.Identity?.Name;
 
             var pesananList = _context.TransaksiKeuangan
-                .Include(t => t.Produk)
-                .Where(t => t.Supplier == username) // Diasumsikan 'Supplier' menyimpan username distributor
-                .ToList();
+                .Where(t => t.DistributorId == userId && t.Status == "Konfirmasi")
+                .OrderByDescending(t => t.Tanggal)
+                .Select(t => new PesananViewModel
+                {
+                    Transaksi = t,
+                    NamaToko = _context.Users
+                        .Where(u => u.Id == t.DistributorId)
+                        .Select(u => u.NamaToko)
+                        .FirstOrDefault(),
+                    NotifikasiDetail = _context.Notifikasi
+                        .Include(n => n.NotifikasiPembelianDetail)
+                        .Where(n => n.TransaksiKeuanganId == t.ID && n.UserId == userId)
+                        .SelectMany(n => n.NotifikasiPembelianDetail)
+                        .ToList()
+
+                })
+                .ToList(); // jangan lupa ini agar data benar-benar dieksekusi
+
+            ViewBag.UserId = userId;
+            ViewBag.TotalPesanan = pesananList.Count;
 
             return View(pesananList);
         }
+
 
         // Ambil detail invoice berdasarkan ID (JSON)
         [HttpGet]

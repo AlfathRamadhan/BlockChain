@@ -1,0 +1,75 @@
+﻿@model List<BlockChain.Models.Produk>
+
+@{
+    Layout = null;
+    var no = 1;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8" />
+    <title>Konfirmasi Produk Terpilih</title>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/katalog.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/layoutgudang.css" asp-append-version="true" />
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet" />
+</head>
+<body>
+    <partial name="_SidebarGudang" />
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title">Gudang Konfirmasi</h2>
+
+            <form method="post" asp-action="KonfirmasiProduk">
+                <div class="table-container">
+                    <table class="transaction-table" id="produkTable">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Kode Produk</th>
+                                <th>Nama Produk</th>
+                                <th>Satuan</th>
+                                <th>Stok</th>
+                                <th>Tanggal Masuk</th>
+                                <th>Tanggal Expired</th>
+                                <th>Jumlah Digunakan</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@no</td>
+                                    <td>@item.KodeProduk</td>
+                                    <td>@item.Nama</td>
+                                    <td>@item.Satuan</td>
+                                    <td>@item.Stok</td>
+                                    <td>@item.TanggalMasuk.ToString("dd MMM yyyy")</td>
+                                    <td>@item.TanggalExpired.ToString("dd MMM yyyy")</td>
+                                    <td>
+                                        @if (item.Stok > 0)
+                                        {
+                                            <input type="number" name="jumlah[@item.Id]" min="1" max="@item.Stok" value="1" class="jumlah-input" />
+                                        }
+                                        else
+                                        {
+                                            <span style="color:red;">Stok habis</span>
+                                        }
+                                    </td>
+                                </tr>
+                                no++;
+                            }
+                        </tbody>
+                    </table>
+
+                    <div class="button-group">
+                        <button type="submit" class="btn-beli">Konfirmasi</button>
+                        <button type="button" class="btn-kembali" onclick="window.location.href='/DataGudang'">Kembali</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

@@ -1,0 +1,114 @@
+﻿@{
+    ViewData["Title"] = "Grafik Pengeluaran Produk";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <title>Grafik Pengeluaran Produk</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/Grafik.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/LayoutOwner.css" asp-append-version="true" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+</head>
+<body>
+    <partial name="Sidebar" />
+
+    <div class="dashboard-wrapper">
+        <div class="main-content">
+            <h2 class="title" style="color: white; font-weight: bold; text-align: center;">Total Pengeluaran Produk</h2>
+            <p style="text-align: center; color: white;">Total Pengeluaran Per Bulan di Tahun <span id="tahunTampil">2025</span></p>
+
+            <div class="grafik-container">
+                <h3>Grafik Pengeluaran Produk Tahunan</h3>
+
+                <div class="selector-container">
+                    <div class="tahun-selector">
+                        <button id="prevTahun">←</button>
+                        <span id="tahunTampil">2025</span>
+                        <button id="nextTahun">→</button>
+                    </div>
+                </div>
+
+                <div class="chart-wrapper">
+                    <canvas id="chartPengeluaran" height="100"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        const bulanList = [
+            "Jan", "Feb", "Mar", "Apr", "Mei", "Jun",
+            "Jul", "Agu", "Sep", "Okt", "Nov", "Des"
+        ];
+
+        // Dummy data: total pengeluaran per bulan (dalam rupiah)
+        const dummyPengeluaran = {
+            '2025': [80000000, 70000000, 65000000, 90000000, 85000000, 60000000, 75000000, 70000000, 80000000, 95000000, 88000000, 90000000],
+            '2024': [50000000, 48000000, 53000000, 60000000, 62000000, 57000000, 59000000, 61000000, 58000000, 64000000, 63000000, 65000000]
+        };
+
+        let currentTahun = 2025;
+
+        const ctx = document.getElementById('chartPengeluaran').getContext('2d');
+        const chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: bulanList,
+                datasets: [{
+                    label: 'Total Pengeluaran per Bulan (Rp)',
+                    data: dummyPengeluaran[currentTahun],
+                    backgroundColor: '#5c3b24'
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 100000000,
+                        ticks: {
+                            callback: function(value) {
+                                return 'Rp ' + value.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            label: function(context) {
+                                return 'Rp ' + context.raw.toLocaleString('id-ID');
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        const tahunTampil = document.querySelectorAll('#tahunTampil');
+
+        function updateChart() {
+            const data = dummyPengeluaran[currentTahun] || new Array(12).fill(0);
+            chart.data.datasets[0].data = data;
+            chart.update();
+            tahunTampil.forEach(el => el.textContent = currentTahun);
+        }
+
+        document.getElementById('prevTahun').addEventListener('click', () => {
+            currentTahun--;
+            updateChart();
+        });
+
+        document.getElementById('nextTahun').addEventListener('click', () => {
+            currentTahun++;
+            updateChart();
+        });
+    </script>
+</body>
+</html>

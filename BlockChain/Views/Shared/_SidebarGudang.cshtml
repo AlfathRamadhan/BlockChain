@@ -25,7 +25,7 @@
             </a>
         </li>
         <li>
-            <a asp-controller="DataGudang" asp-action="Index" class="@(currentController == "DataGudang" && currentAction == "Index" ? "active" : "")">
+            <a asp-controller="DataGudang" asp-action="Index" class="@(currentController == "DataGudang" && (currentAction =="KonfirmasiProduk" || currentAction == "Index") ? "active" : "")">
                 <i class="fa fa-box"></i> Gudang
             </a>
         </li>

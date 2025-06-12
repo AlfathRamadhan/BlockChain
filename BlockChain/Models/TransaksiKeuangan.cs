@@ -9,12 +9,15 @@
         public decimal Jumlah { get; set; }
         public string Status { get; set; }
         public string MetodePembayaran { get; set; }
+        public decimal TotalHarga { get; set; }
+
+
 
         public ICollection<ItemProduk> Produk { get; set; } // ICollection untuk relasi
 
-        public int UserId { get; set; }  // FK ke User
+        public int DistributorId { get; set; } // FK ke tabel Users
+        public User Distributor { get; set; }  // Navigasi opsional
 
-        public User User { get; set; }   // Properti navigasi ke User
 
     }
 
@@ -25,6 +28,7 @@
         public string Satuan { get; set; }
         public int JumlahUnit { get; set; }
         public decimal HargaSatuan { get; set; }
+
 
         // Foreign key ke TransaksiKeuangan
         public int TransaksiKeuanganID { get; set; }

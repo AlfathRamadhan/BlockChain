@@ -26,6 +26,8 @@ namespace BlockChain.Models
         public List<string> Satuan { get; set; }
         [MaxLength(50)]
         public string? Status { get; set; }
+        public string? DetailJson { get; set; } // nullable supaya aman dari null
+
 
         public int? UserId { get; set; } // foreign key
 
@@ -33,8 +35,10 @@ namespace BlockChain.Models
         public User User { get; set; } // navigational property
 
 
-        [NotMapped]
         public int? TransaksiKeuanganId { get; set; }
+
+        [ForeignKey("TransaksiKeuanganId")]
+        public TransaksiKeuangan TransaksiKeuangan { get; set; }
 
         public ICollection<NotifikasiPembelianDetail> NotifikasiPembelianDetail { get; set; }
 

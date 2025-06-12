@@ -1,8 +1,8 @@
 ﻿@model List<BlockChain.Models.Produk>
 @{
     Layout = null;
-    var no = 1;
 }
+
 
 <!DOCTYPE html>
 <html lang="id">
@@ -21,7 +21,6 @@
             <h2 class="title">Gudang</h2>
             <div class="table-section">
                 <div class="table-header">
-                    <h3>Data Barang Gudang</h3>
                     <button class="add-button" onclick="openModal()">+ Tambah Barang</button>
                 </div>
 
@@ -60,9 +59,11 @@
                     <table class="transaction-table">
                         <thead>
                             <tr>
+                                <th><input type="checkbox" id="checkAll" /></th>
                                 <th>No</th>
                                 <th>Kode Produk</th>
                                 <th>Nama Produk</th>
+                                <th>Satuan</th>
                                 <th>Stok</th>
                                 <th>Tanggal Masuk</th>
                                 <th>Tanggal Expired</th>
@@ -70,25 +71,55 @@
                             </tr>
                         </thead>
                         <tbody id="produkTableBody">
-                            @foreach (var item in Model)
+                            @{
+                                var no = 1;
+                            }
+                            @if (!Model.Any())
                             {
-                                <tr id="row-@item.Id">
-                                    <td>@no</td>
-                                    <td>@item.KodeProduk</td>
-                                    <td>@item.Nama</td>
-                                    <td>@item.Stok</td>
-                                    <td>@item.TanggalMasuk.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</td>
-                                    <td>@item.TanggalExpired.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</td>
-                                    <td>
-                                        <button class="delete-button" onclick="confirmDelete(@item.Id)">
-                                            <i class="fa-solid fa-trash-can" style="color: inherit;"></i>
-                                        </button>
+                                <tr>
+                                    <td colspan="9" style="text-align:center; padding: 20px;">
+                                        Tidak ada data produk.
                                     </td>
                                 </tr>
-                                no++;
+                            }
+                            else
+                            {
+                                foreach (var item in Model)
+                                {
+                                    <tr id="row-@item.Id">
+                                        <td><input type="checkbox" class="produk-checkbox" value="@item.Id" /></td>
+                                        <td>@no</td>
+                                        <td>@item.KodeProduk</td>
+                                        <td>@item.Nama</td>
+                                        <td>@item.Satuan</td>
+                                        <td>@item.Stok</td>
+                                        <td>@item.TanggalMasuk.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</td>
+                                        <td>@item.TanggalExpired.ToString("dd MMMM yyyy", new System.Globalization.CultureInfo("id-ID"))</td>
+                                        <td>
+                                            <button class="delete-button" onclick="confirmDelete(@item.Id)">
+                                                <i class="fa-solid fa-trash-can" style="color: inherit;"></i>
+                                            </button>
+                                        </td>
+                                    </tr>
+                                    no++;
+                                }
                             }
                         </tbody>
+
                     </table>
+                    <div class="table-footer">
+                        <div class="pagination-buttons">
+                            <button type="button" id="prevPage" class="pagination-btn">Previous</button>
+
+                            <div id="pageNumbers" class="page-numbers">
+                                <!-- Nomor halaman akan di-generate via JavaScript -->
+                            </div>
+
+                            <button type="button" id="nextPage" class="pagination-btn">Next</button>
+                            <button class="confirm-button ms-2" onclick="konfirmasiProduk()">Konfirmasi Produk</button>
+                        </div>
+                    </div>
+
                 </div>
             </div>
 
@@ -111,6 +142,10 @@
                     <input type="text" name="Nama" required />
                 </div>
                 <div class="form-group">
+                    <label>Satuan</label>
+                    <input type="text" name="Satuan" required />
+                </div>
+                <div class="form-group">
                     <label>Stok</label>
                     <input type="number" name="Stok" required />
                 </div>
@@ -127,133 +162,15 @@
         </div>
     </div>
 
-    <!-- Konfirmasi Hapus Pengguna -->
+
     <div class="modal" id="confirmDeleteModal">
         <div class="modal-content">
-            <p>Apakah Anda yakin ingin menghapus pengguna ini?</p>
+            <p>Apakah Anda yakin ingin menghapus produk ini?</p>
             <button onclick="deleteConfirmed()" class="confirm-delete">Ya</button>
             <button onclick="closeDeleteConfirmModal()" class="cancel-delete">Batal</button>
         </div>
     </div>
 
-    <script>
-        // Fungsi untuk membuka modal
-        function openModal() {
-            console.log("Modal dibuka"); // Debugging untuk memastikan modal dibuka
-            document.getElementById("tambahModal").style.display = "block";
-
-            // Set kode produk otomatis saat modal dibuka
-            const kodeInput = document.getElementById("kodeProdukInput");
-            if (kodeInput) {
-                kodeInput.value = generateKodeProduk();
-            }
-        }
-
-        // Fungsi untuk menutup modal
-        function closeModal() {
-            document.getElementById("tambahModal").style.display = "none";
-        }
-
-        // Fungsi untuk menangani klik di luar modal untuk menutupnya
-        window.onclick = function(event) {
-            var modal = document.getElementById("tambahModal");
-            if (event.target === modal) {
-                modal.style.display = "none";
-            }
-
-            // Menutup dropdown jika klik di luar dropdown
-            if (!event.target.matches('.date-filter')) {
-                var dropdown = document.getElementById("dropdownOptions");
-                if (dropdown && dropdown.style.display === "block") {
-                    dropdown.style.display = "none";
-                }
-            }
-        }
-
-        // Fungsi untuk toggle dropdown tanggal
-        function toggleDropdown() {
-            const dropdown = document.getElementById("dropdownOptions");
-            dropdown.style.display = dropdown.style.display === "block" ? "none" : "block";
-        }
-
-        // Pencarian produk dengan input
-        const searchInput = document.getElementById("searchInput");
-        const tableBody = document.getElementById("produkTableBody");
-
-        searchInput.addEventListener("input", function () {
-            const term = this.value;
-
-            fetch(`/DataGudang/SearchJson?term=${encodeURIComponent(term)}`)
-                .then(response => response.json())
-                .then(data => {
-                    tableBody.innerHTML = ""; // Kosongkan tabel
-
-                    data.forEach((item, index) => {
-                        const row = `<tr>
-                            <td>${index + 1}</td>
-                            <td>${item.kodeProduk}</td>
-                            <td>${item.nama}</td>
-                            <td>${item.stok}</td>
-                            <td>${item.tanggalMasuk}</td>
-                            <td>${item.tanggalExpired}</td>
-                            <td><a href="#"><i class="fas fa-external-link-alt"></i></a></td>
-                        </tr>`;
-                        tableBody.insertAdjacentHTML("beforeend", row);
-                    });
-                });
-        });
-
-        // Fungsi untuk menghasilkan kode produk otomatis
-        function generateKodeProduk() {
-            const timestamp = Date.now().toString().slice(-6); // Ambil 6 digit akhir timestamp
-            const random = Math.floor(100 + Math.random() * 900); // 3 digit random
-            return `PRD-${timestamp}${random}`;
-        }
-        let deleteId = 0;
-
-        function confirmDelete(id) {
-            deleteId = id;  // Menyimpan ID produk yang akan dihapus
-            document.getElementById("confirmDeleteModal").style.display = "block";  // Tampilkan modal konfirmasi
-        }
-
-               function deleteConfirmed() {
-            console.log('Menghapus produk dengan ID: ' + deleteId);
-
-            fetch(`/DataGudang/Hapus?id=${deleteId}`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json'
-                },
-                body: JSON.stringify({ id: deleteId })
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    console.log('Produk berhasil dihapus');
-
-                    // Hapus baris produk di DOM
-                    const row = document.getElementById(`row-${deleteId}`);
-                    if (row) {
-                        row.remove();
-                    }
-
-                    // Tutup modal konfirmasi
-                    closeDeleteConfirmModal();
-                } else {
-                    alert("Gagal menghapus produk: " + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('Error:', error);
-                alert("Terjadi kesalahan saat menghapus produk");
-            });
-        }
-
-        // Function to close delete confirmation modal
-        function closeDeleteConfirmModal() {
-            document.getElementById("confirmDeleteModal").style.display = "none";
-        }
-
-    </script>
+    <script src="~/js/datagudang.js"></script>
 </body>
 </html>

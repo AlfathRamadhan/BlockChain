@@ -23,6 +23,8 @@
         public List<decimal> TotalHarga { get; set; }
         public List<DateTime?> TanggalExpired { get; set; }
         public string Status { get; set; }
+        public string Kategori { get; set; }
+        public string DetailJson { get; set; }
 
 
 

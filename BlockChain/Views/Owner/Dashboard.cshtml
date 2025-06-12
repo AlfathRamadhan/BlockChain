@@ -10,6 +10,7 @@
     <title>Dashboard - Cookies</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/ownerdashboard.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/LayoutOwner.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
@@ -19,36 +20,35 @@
             <h2 class="title">Dashboard</h2>
 
             <div class="cards">
+                <!-- KARTU: Total Pemakaian Produk -->
                 <div class="card-section">
-                    <h3>Pelacakan Produk</h3>
-                    <div class="card track">
-                        <p class="count">1</p>
-                        <button>LACAK PRODUK</button>
+                    <div class="card new-card">
+                        <p class="card-title">Total Pemakaian Produk</p>
+                        <small class="card-subtitle">Total Pemakaian Bulan Ini</small>
+                        <p class="card-value">6</p>
+                        <form asp-controller="Owner" asp-action="GrafikPemakaianProduk" method="get" style="display:inline;">
+                            <button type="submit" class="lihat-grafik">
+                                <i class="fas fa-chart-line"></i> Lihat Grafik Pemakaian
+                            </button>
+                        </form>
                     </div>
                 </div>
+
+                <!-- KARTU: Total Pembelian -->
                 <div class="card-section">
-                    <h3>Statistik Pengguna</h3>
-                    <div class="card user-stats">
-                        <div class="stats-row">
-                            <div class="stat-box">
-                                <div class="icon-box" ><i class="fas fa-user-tie"></i></div>
-                                <div>Keuangan</div>
-                                <span>@ViewBag.Keuangan</span>
-                            </div>
-                            <div class="stat-box">
-                                <div class="icon-box"><i class="fas fa-user-gear"></i></div>
-                                <div>Gudang</div>
-                                <span>@ViewBag.Gudang</span>
-                            </div>
-                            <div class="stat-box">
-                                <div class="icon-box"><i class="fas fa-user-tag"></i></div>
-                                <div>Distributor</div>
-                                <span>@ViewBag.Distributor</span>
-                            </div>
-                        </div>
+                    <div class="card new-card">
+                        <p class="card-title">Total Pembelian</p>
+                        <small class="card-subtitle">Total Pembelian Bulan Ini (Rp)</small>
+                        <p class="card-value">123.050.000</p>
+                        <form asp-controller="Owner" asp-action="GrafikPengeluaranProduk" method="get" style="display:inline;">
+                            <button type="submit" class="lihat-grafik">
+                                <i class="fas fa-chart-line"></i> Lihat Grafik Total
+                            </button>
+                        </form>
                     </div>
                 </div>
             </div>
+
 
             <div class="table-only-section">
                 <h3>Pelacakan Produk</h3>

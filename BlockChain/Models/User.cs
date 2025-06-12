@@ -49,6 +49,8 @@ namespace BlockChain.Models
         [NotMapped]
         public string PasswordBaru { get; set; }
         public string? Bank { get; set; }
+        public bool IsVerified { get; set; } = false; // default: belum diverifikasi
+
 
         public ICollection<Notifikasi> NotifikasiList { get; set; }
 

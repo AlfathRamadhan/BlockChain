@@ -58,6 +58,13 @@ namespace BlockChain.Controllers
                 return View();
             }
 
+            if (!user.IsVerified && user.Role == "Distributor")
+            {
+                ModelState.AddModelError("", "Akun Anda belum diverifikasi oleh Owner.");
+                return View();
+            }
+
+
             // Simpan data user ke session
             HttpContext.Session.SetInt32("UserId", user.Id);
             HttpContext.Session.SetString("Username", user.Username);

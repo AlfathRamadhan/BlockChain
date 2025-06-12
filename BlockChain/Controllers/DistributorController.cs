@@ -23,5 +23,32 @@ namespace BlockChain.Controllers
 
             return View(distributors);
         }
+        [HttpPost]
+        public IActionResult Verifikasi(int id)
+        {
+            var distributor = _context.Users.FirstOrDefault(u => u.Id == id && u.Role == "Distributor");
+            if (distributor != null)
+            {
+                distributor.IsVerified = true;
+                _context.SaveChanges();
+                TempData["status"] = "Distributor berhasil diverifikasi.";
+            }
+            return RedirectToAction("Distributorowner");
+        }
+
+        [HttpPost]
+        public IActionResult Tolak(int id)
+        {
+            var distributor = _context.Users.FirstOrDefault(u => u.Id == id && u.Role == "Distributor");
+            if (distributor != null)
+            {
+                _context.Users.Remove(distributor);
+                _context.SaveChanges();
+                TempData["status"] = "Distributor ditolak dan dihapus.";
+            }
+            return RedirectToAction("Distributorowner");
+        }
+
+
     }
 }

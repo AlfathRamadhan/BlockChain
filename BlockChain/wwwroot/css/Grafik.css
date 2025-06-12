@@ -1,0 +1,69 @@
+﻿.grafik-container {
+    background-color: #F5F1E3;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.1);
+    text-align: center;
+}
+
+    .grafik-container h3, .grafik-container h4 {
+        color: #5c3b24;
+        margin: 0;
+    }
+
+.chart-wrapper {
+    max-width: 800px;
+    margin: 30px auto;
+}
+
+.month-selector button {
+    background: none;
+    border: none;
+    font-size: 18px;
+    color: #5c3b24;
+    cursor: pointer;
+}
+.selector-container {
+    margin-bottom: 30px;
+    color: white;
+    text-align: center;
+}
+
+.tahun-selector {
+    margin-bottom: 20px;
+    font-size: 18px;
+}
+
+    .tahun-selector button {
+        padding: 5px 12px;
+        margin: 0 10px;
+        font-size: 18px;
+        cursor: pointer;
+        border: none;
+        background-color: #5c3b24;
+        color: white;
+        border-radius: 5px;
+    }
+
+.bulan-selector {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+}
+
+    .bulan-selector button {
+        padding: 5px 12px;
+        margin: 0 10px;
+        font-size: 18px;
+        cursor: pointer;
+        border: none;
+        background-color: #5c3b24;
+        color: white;
+        border-radius: 5px;
+    }
+
+.highlight-brown {
+    color: #5c3b24;
+    font-weight: bold;
+}

@@ -9,16 +9,17 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Distributor - Cookies</title>
+    <title>Supplier</title>
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/ownerdistributor.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/css/LayoutOwner.css" asp-append-version="true" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
 </head>
 <body>
     <partial name="Sidebar" />
     <div class="dashboard-wrapper">
         <div class="main-content">
-            <h2 class="title">Distributor</h2>
+            <h2 class="title">Supplier</h2>
 
             <div class="table-section">
                 <div class="table-container">
@@ -35,7 +36,8 @@
                                 <th>Username</th>
                                 <th>Email</th>
                                 <th>Kategori</th>
-                                <th>Action</th>
+                                <th>Verifikasi</th>
+                                <th>Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -47,7 +49,42 @@
                                     <td>@distributor.Email</td>
                                     <td>@distributor.Kategori</td>
                                     <td>
-                                        <button class="detail-button" disabled>Detail</button>
+                                        @if (distributor.IsVerified)
+                                        {
+                                            <span class="badge badge-success">Terverifikasi</span>
+                                        }
+                                        else
+                                        {
+                                            <div class="verifikasi-actions">
+                                                <form asp-action="Verifikasi" asp-controller="Distributor" method="post" class="inline-form">
+                                                    <input type="hidden" name="id" value="@distributor.Id" />
+                                                    <button type="submit" class="verifikasi-button">Verifikasi</button>
+                                                </form>
+                                                <form asp-action="Tolak" asp-controller="Distributor" method="post" class="inline-form">
+                                                    <input type="hidden" name="id" value="@distributor.Id" />
+                                                    <button type="submit" class="tolak-button">Tolak</button>
+                                                </form>
+                                            </div>
+                                        }
+                                    </td>
+                                    <td>
+                                        <button class="detail-button"
+                                                onclick="showDetailModal(
+                                                    '@distributor.NamaToko',
+                                                    '@distributor.Username',
+                                                    '@distributor.Email',
+                                                    '@distributor.Kategori',
+                                                    '@distributor.NamaLengkap',
+                                                    '@distributor.NoHp',
+                                                    '@distributor.Alamat',
+                                                    '@distributor.Deskripsi',
+                                                    '@distributor.NoRekening',
+                                                    '@distributor.Bank',
+                                                    '@(!string.IsNullOrEmpty(distributor.LogoPath) ? "/images/logos/" + distributor.LogoPath : "/images/logo.png")'
+                                                )">
+                                            Detail
+                                        </button>
+
                                     </td>
                                 </tr>
                             }
@@ -58,8 +95,68 @@
         </div>
     </div>
 
+    <!-- Modal Detail Distributor -->
+    <div id="detailModal" class="modal">
+        <div class="modal-content">
+            <span class="close-button" onclick="closeDetailModal()">&times;</span>
+            <h3 style="text-align:center;">Detail Distributor</h3>
+            <div style="text-align:center; margin-bottom: 20px;">
+                <img id="modalLogo" src="" alt="Logo Toko" style="max-width: 100px;" />
+            </div>
+            <form class="detail-form" style="display: flex; flex-wrap: wrap; gap: 20px; justify-content: center;">
+                <div style="flex: 1 1 45%;">
+                    <label>Nama Toko</label>
+                    <input type="text" id="modalNamaToko" readonly class="readonly-input" />
+
+                    <label>Username</label>
+                    <input type="text" id="modalUsername" readonly class="readonly-input" />
+
+                    <label>Email</label>
+                    <input type="text" id="modalEmail" readonly class="readonly-input" />
+
+                    <label>Kategori</label>
+                    <input type="text" id="modalKategori" readonly class="readonly-input" />
+
+                    <label>Nama Lengkap</label>
+                    <input type="text" id="modalNamaLengkap" readonly class="readonly-input" />
+                </div>
+                <div style="flex: 1 1 45%;">
+                    <label>No HP</label>
+                    <input type="text" id="modalNoHp" readonly class="readonly-input" />
+
+                    <label>Alamat</label>
+                    <input type="text" id="modalAlamat" readonly class="readonly-input" />
+
+                    <label>Deskripsi</label>
+                    <input type="text" id="modalDeskripsi" readonly class="readonly-input" />
+
+                    <label>No Rekening</label>
+                    <input type="text" id="modalNoRekening" readonly class="readonly-input" />
+
+                    <label>Bank</label>
+                    <input type="text" id="modalBank" readonly class="readonly-input" />
+                </div>
+            </form>
+        </div>
+    </div>
+
+
+
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    @if (TempData["status"] != null)
+    {
+        <script>
+            Swal.fire({
+                icon: 'success',
+                title: '@TempData["status"]',
+                showConfirmButton: false,
+                timer: 2000
+            });
+        </script>
+    }
     <script>
-        // JavaScript untuk pencarian dinamis
+
+        // Pencarian dinamis
         document.getElementById('searchInput').addEventListener('input', function (e) {
             const searchValue = e.target.value.toLowerCase();
             const rows = document.querySelectorAll('.transaction-table tbody tr');
@@ -69,6 +166,34 @@
                 row.style.display = match ? '' : 'none';
             });
         });
+
+        // Modal detail
+        function showDetailModal(namaToko, username, email, kategori, namaLengkap, noHp, alamat, deskripsi, noRekening, bank, logoPath) {
+            document.getElementById('modalNamaToko').value = namaToko;
+            document.getElementById('modalUsername').value = username;
+            document.getElementById('modalEmail').value = email;
+            document.getElementById('modalKategori').value = kategori;
+            document.getElementById('modalNamaLengkap').value = namaLengkap;
+            document.getElementById('modalNoHp').value = noHp;
+            document.getElementById('modalAlamat').value = alamat;
+            document.getElementById('modalDeskripsi').value = deskripsi;
+            document.getElementById('modalNoRekening').value = noRekening;
+            document.getElementById('modalBank').value = bank;
+            document.getElementById('modalLogo').src = logoPath;
+            document.getElementById('detailModal').style.display = 'block';
+        }
+
+        function closeDetailModal() {
+            document.getElementById('detailModal').style.display = 'none';
+        }
+
+        // Tutup modal jika diklik di luar konten
+        window.onclick = function (event) {
+            const modal = document.getElementById('detailModal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
     </script>
 </body>
 </html>

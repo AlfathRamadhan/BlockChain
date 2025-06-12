@@ -71,19 +71,20 @@ namespace BlockChain.Controllers
         }
 
         [HttpPost]
-        [ValidateAntiForgeryToken]
+        //[ValidateAntiForgeryToken]
         public async Task<IActionResult> KonfirmasiPembelian(int id)
         {
             using var transaction = await _context.Database.BeginTransactionAsync();
 
             try
             {
-                var notifikasi = await _context.Notifikasi
+                var notifikasi = _context.Notifikasi
                     .Include(n => n.NotifikasiPembelianDetail)
-                    .FirstOrDefaultAsync(n => n.Id == id);
+                    .FirstOrDefault(n => n.Id == id);
 
-                if (notifikasi == null)
-                    return NotFound("Notifikasi tidak ditemukan");
+                //if (notifikasi.TransaksiKeuanganId == null)
+                //    return BadRequest("Transaksi keuangan tidak ditemukan pada notifikasi ini");
+
 
                 var detailList = _context.NotifikasiPembelianDetail
                     .Where(d => d.NotifikasiId == id)
@@ -91,6 +92,8 @@ namespace BlockChain.Controllers
 
                 if (!detailList.Any())
                     return NotFound("Detail notifikasi pembelian tidak ditemukan");
+
+                var userId = HttpContext.Session.GetInt32("UserId");
 
                 // Salin data
                 var salinanDetailList = detailList.Select(d => new NotifikasiPembelianDetail
@@ -101,7 +104,8 @@ namespace BlockChain.Controllers
                     HargaSatuan = d.HargaSatuan,
                     JumlahDibeli = d.JumlahDibeli,
                     TotalHarga = d.TotalHarga,
-                    TanggalExpired = d.TanggalExpired
+                    TanggalExpired = d.TanggalExpired,
+                    DistributorId = d.DistributorId
                 }).ToList();
 
                 // Hapus detail lama
@@ -116,7 +120,8 @@ namespace BlockChain.Controllers
                     Pesan = "Pesanan telah dikonfirmasi oleh Owner",
                     Kategori = "Pembelian",
                     Status = "Menunggu Proses Gudang",
-                    TransaksiKeuanganId = notifikasi.TransaksiKeuanganId
+                    TransaksiKeuanganId = notifikasi.TransaksiKeuanganId,
+                    UserId = userId
                 };
 
                 _context.Notifikasi.Add(notifikasiGudang);
@@ -125,15 +130,62 @@ namespace BlockChain.Controllers
                 // Tambah ulang detail ke notifikasi Gudang
                 foreach (var detail in salinanDetailList)
                 {
+                    Console.WriteLine($"Detail: {detail.NamaProduk}, {detail.HargaSatuan}");
                     detail.NotifikasiId = notifikasiGudang.Id;
                     _context.NotifikasiPembelianDetail.Add(detail);
                 }
+
+                // Dapatkan semua distributor unik dari detail
+                var distributorIds = salinanDetailList
+                    .Select(d => d.DistributorId)
+                    .Distinct()
+                    .ToList();
+
+                foreach (var distributorId in distributorIds)
+                {
+                    // Buat notifikasi untuk Distributor
+                    var notifikasiDistributor = new Notifikasi
+                    {
+                        Tanggal = DateTime.Now,
+                        Role = "Distributor",
+                        Pesan = "Pesanan Baru",
+                        Kategori = "Pembelian",
+                        Status = "Konfirmasi",
+                        TransaksiKeuanganId = notifikasi.TransaksiKeuanganId,
+                        UserId = distributorId
+                    };
+
+                    _context.Notifikasi.Add(notifikasiDistributor);
+                    await _context.SaveChangesAsync();
+
+                    // Tambahkan detail yang sesuai dengan distributor ini
+                    var detailDistributor = salinanDetailList
+                        .Where(d => d.DistributorId == distributorId)
+                        .Select(d => new NotifikasiPembelianDetail
+                        {
+                            NamaProduk = d.NamaProduk,
+                            Stok = d.Stok,
+                            Satuan = d.Satuan,
+                            HargaSatuan = d.HargaSatuan,
+                            JumlahDibeli = d.JumlahDibeli,
+                            TotalHarga = d.TotalHarga,
+                            TanggalExpired = d.TanggalExpired,
+                            DistributorId = d.DistributorId,
+                            NotifikasiId = notifikasiDistributor.Id
+                        }).ToList();
+
+                    _context.NotifikasiPembelianDetail.AddRange(detailDistributor);
+                    await _context.SaveChangesAsync();
+                }
+
 
                 // Update notifikasi lama
                 notifikasi.Status = "Terkonfirmasi";
                 _context.Notifikasi.Update(notifikasi);
 
                 await _context.SaveChangesAsync();
+                Console.WriteLine($"ID Notifikasi Gudang: {notifikasiGudang.Id}");
+
                 await transaction.CommitAsync();
 
                 return Ok(new { message = "Pembelian berhasil dikonfirmasi" });
@@ -141,8 +193,9 @@ namespace BlockChain.Controllers
             catch (Exception ex)
             {
                 await transaction.RollbackAsync();
-                return StatusCode(500, $"Terjadi kesalahan server: {ex.Message}");
+                return StatusCode(500, $"Terjadi kesalahan server: {ex.Message} \n {ex.InnerException?.Message}");
             }
+
         }
 
 
@@ -162,5 +215,52 @@ namespace BlockChain.Controllers
 
             return Ok();
         }
+        [HttpPost]
+        public IActionResult KonfirmasiProduk(Dictionary<int, int> jumlah)
+        {
+            var produkDetailList = new List<ProdukDetailViewModel>();
+            int totalProdukDigunakan = 0;
+
+            foreach (var pair in jumlah)
+            {
+                var produk = _context.Produk.FirstOrDefault(p => p.Id == pair.Key);
+                if (produk != null && produk.Stok >= pair.Value)
+                {
+                    produk.Stok -= pair.Value;
+                    totalProdukDigunakan++;
+
+                    produkDetailList.Add(new ProdukDetailViewModel
+                    {
+                        Nama = produk.Nama,
+                        Jumlah = pair.Value,
+                        Satuan = produk.Satuan,
+                        Expired = produk.TanggalExpired.ToString("dd/MM/yyyy") ?? "-"
+                    });
+                }
+            }
+
+            var owner = _context.Users.FirstOrDefault(u => u.Role == "Owner");
+            if (totalProdukDigunakan > 0)
+            {
+                var pesan = $"Gudang menggunakan {totalProdukDigunakan} produk";
+                var detailJson = System.Text.Json.JsonSerializer.Serialize(produkDetailList);
+
+                var notif = new Notifikasi
+                {
+                    Tanggal = DateTime.Now,
+                    Role = "Owner",
+                    Pesan = pesan,
+                    Kategori = "GudangMemakaiProduk",
+                    UserId = owner.Id,
+                    DetailJson = detailJson // tambahkan kolom baru DetailJson di tabel Notifikasi
+                };
+
+                _context.Notifikasi.Add(notif);
+                _context.SaveChanges();
+            }
+
+            return RedirectToAction("Index");
+        }
+
     }
 }

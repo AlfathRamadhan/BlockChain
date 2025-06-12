@@ -1,21 +1,9 @@
-﻿body {
-    margin: 0;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #B99A81;
-    color: white;
-}
-
+﻿
 .main-content h3,
 .table-section h3 {
     color: #7a3e2c;
 }
 
-.title {
-    font-size: 28px;
-    font-weight: bold;
-    color: white;
-    margin-bottom: 20px;
-}
 
 .card.track h3 {
     color: #7a3e2c;
@@ -24,81 +12,6 @@
 .card.user-stats h3 {
     color: #7a3e2c;
 }
-
-.dashboard-wrapper {
-    display: flex;
-    flex-direction: row;
-    flex-wrap: wrap;
-}
-
-.sidebar {
-    position: fixed;
-    width: 180px;
-    background-color: #EDE8D5;
-    padding: 0px 20px 20px 20px; /* Menambah padding atas */
-    height: 100vh;
-    box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    overflow-y: auto;
-    transition: left 0.3s ease;
-}
-
-    .sidebar .logo img {
-        width: 70%;
-        margin-bottom: 0px; /* Meningkatkan jarak bawah logo */
-        display: block;
-        margin-left: auto;
-        margin-right: auto;
-    }
-
-.nav-links a:hover {
-    background-color: #D6CDBB;
-    color: #5c3b24;
-    transform: scale(1.03);
-}
-
-.nav-links a.active {
-    background-color: #5c3b24;
-    color: white;
-}
-
-.nav-links {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-    .nav-links li {
-        margin-bottom: 15px;
-    }
-
-    .nav-links a {
-        text-decoration: none;
-        gap: 10px;
-        color: #2e1d0e;
-        font-weight: bold;
-        display: flex;
-        align-items: center;
-        padding: 10px;
-        border-radius: 5px;
-        transition: all 0.3s ease;
-    }
-
-    .nav-links i {
-        font-size: 18px;
-        width: 20px;
-        text-align: center;
-    }
-
-.main-content {
-    margin-left: 220px;
-    padding: 30px;
-    background-color: #B99A81;
-    color: black;
-    flex: 1;
-    overflow: auto; /* Menambahkan overflow untuk scroll */
-}
-
 
 .cards {
     display: grid;
@@ -246,6 +159,52 @@
 .card h3 {
     transition: color 0.3s ease;
 }
+
+.card.new-card {
+    background-color: #ecebdf;
+    border-radius: 10px;
+    padding: 16px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    min-width: 250px;
+    text-align: center;
+    color: #5c3b24;
+}
+
+.card-title {
+    font-weight: bold;
+    color: #5c3b24;
+    font-size: 16px;
+    margin-bottom: 4px;
+}
+
+.card-subtitle {
+    font-size: 14px;
+    color: #5c3b24;
+}
+
+.card-value {
+    font-size: 24px;
+    font-weight: bold;
+    margin: 8px 0;
+    color: #5c3b24;
+}
+
+.card.new-card button.lihat-grafik {
+    background-color: #5c3b24;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    margin-top: 10px;
+    border-radius: 6px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+    .card.new-card button.lihat-grafik i {
+        margin-right: 6px;
+    }
+
+
 
 @media (max-width: 768px) {
     .dashboard-wrapper {

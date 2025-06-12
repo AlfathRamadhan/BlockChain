@@ -1,4 +1,6 @@
 ﻿@model BlockChain.Models.NotifikasiGabunganViewModel
+@inject Microsoft.AspNetCore.Antiforgery.IAntiforgery Antiforgery
+
 @{
     Layout = null;
 }
@@ -16,7 +18,6 @@
 </head>
 <body>
     <partial name="Sidebar" />
-    @Html.AntiForgeryToken()
     <div class="dashboard-wrapper">
         <div class="main-content">
             <h2 class="title">Notifikasi</h2>
@@ -44,7 +45,7 @@
                                     }
                                     else
                                     {
-                                        <p><strong>Notifikasi:</strong> @notif.Pesan</p>
+                                        <p>@notif.Pesan</p>
                                         <p><small>@notif.Tanggal.ToString("dd/MM/yyyy HH:mm")</small></p>
                                     }
                                 </div>
@@ -71,10 +72,18 @@
                                         Cek Detail
                                     </button>
                                 }
+                                else if (notif.Kategori == "GudangMemakaiProduk" && !string.IsNullOrEmpty(notif.DetailJson))
+                                {
+                                    <button class="notification-button" data-json='@Html.Raw(Json.Serialize(notif.DetailJson))' onclick="showGudangProdukModalFromAttr(this)">
+                                        Cek Detail
+                                    </button>
+
+                                }
                                 else
                                 {
                                     <button class="notification-button" disabled>Detail Tidak Tersedia</button>
                                 }
+
                                 <button class="delete-button" onclick="deleteNotification(@notif.Id)" title="Hapus Notifikasi" style="background:none; border:none; cursor:pointer; color:#c00;">
                                     <i class="fa fa-trash"></i>
                                 </button>
@@ -88,268 +97,69 @@
                 </div>
             </div>
         </div>
-    </div>
-
-    <!-- Modal -->
-    <div id="detailModal" class="modal">
-        @Html.AntiForgeryToken()
-        <div class="modal-content">
-            <span class="close" onclick="closeModal()">&times;</span>
-            <h3 class="modal-title">Detail Konfirmasi</h3>
-            <div id="produkDetailList">
-                <table class="produk-table">
-                    <thead>
-                        <tr>
-                            <th>Nama Produk</th>
-                            <th>Jumlah</th>
-                            <th>Satuan</th>
-                            <th>Expired</th>
-                            <th>Harga Satuan</th>
-                            <th>Total Harga</th>
-                        </tr>
-                    </thead>
-                    <tbody id="produkTableBody"></tbody>
-                    <tfoot>
-                        <tr>
-                            <td colspan="5" style="text-align:right;"><strong>Subtotal:</strong></td>
-                            <td id="subtotalHarga"><strong>Rp 0</strong></td>
-                        </tr>
-                    </tfoot>
-                </table>
-                <div class="modal-actions">
-                    @Html.AntiForgeryToken()
-                    <button class="confirm-button" onclick="konfirmasiPembelian()">Konfirmasi</button>
-                    <button class="reject-button" onclick="tolakPembelian()">Tolak</button>
+        <!-- Modal -->
+        <div id="detailModal" class="modal">
+            <div class="modal-content">
+                <span class="close" onclick="closeModal()">&times;</span>
+                <h3 class="modal-title">Detail Konfirmasi</h3>
+                <div id="produkDetailList">
+                    <table class="produk-table">
+                        <thead>
+                            <tr>
+                                <th>Nama Produk</th>
+                                <th>Jumlah</th>
+                                <th>Satuan</th>
+                                <th>Expired</th>
+                                <th>Harga Satuan</th>
+                                <th>Total Harga</th>
+                            </tr>
+                        </thead>
+                        <tbody id="produkTableBody"></tbody>
+                        <tfoot>
+                            <tr>
+                                <td colspan="5" style="text-align:right;"><strong>Subtotal:</strong></td>
+                                <td id="subtotalHarga"><strong>Rp 0</strong></td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                    <div class="modal-actions">
+                        <input name="__RequestVerificationToken" type="hidden" value="@(Antiforgery.GetTokens(ViewContext.HttpContext).RequestToken)" />
+                        <button class="confirm-button" onclick="konfirmasiPembelian()">Konfirmasi</button>
+                        <button class="reject-button" onclick="tolakPembelian()">Tolak</button>
+                    </div>
                 </div>
             </div>
         </div>
+
+        <!-- Modal untuk Gudang Memakai Produk -->
+        <div id="gudangProdukModal" class="swal2-container" style="display:none;">
+            <div class="swal2-popup" style="width: 600px;">
+                <div class="swal2-header">
+                    <h2 class="swal2-title">Detail Produk yang Digunakan</h2>
+                </div>
+                <div class="swal2-content">
+                    <table style="width:100%; border-collapse: collapse;" border="1">
+                        <thead>
+                            <tr>
+                                <th>Nama Produk</th>
+                                <th>Jumlah</th>
+                                <th>Satuan</th>
+                                <th>Expired</th>
+                            </tr>
+                        </thead>
+                        <tbody id="gudangProdukDetailBody"></tbody>
+                    </table>
+                </div>
+                <div class="swal2-actions">
+                    <button onclick="closeGudangProdukModal()" class="swal2-confirm swal2-styled">Tutup</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 
+
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <script>
-        let currentNotifId = null;
-
-        function filterNotifications(event, kategori) {
-            const items = document.querySelectorAll('.notification-item');
-            const tabs = document.querySelectorAll('.notification-tabs .tab');
-
-            tabs.forEach(tab => tab.classList.remove('active'));
-            event.target.classList.add('active');
-
-            items.forEach(item => {
-                if (kategori === 'semua') {
-                    item.style.display = 'flex';
-                } else {
-                    item.style.display = item.classList.contains(kategori) ? 'flex' : 'none';
-                }
-            });
-        }
-
-        function openModal(button) {
-             const id = button.getAttribute("data-id");
-            currentNotifId = button.getAttribute("data-id");
-
-            const jsonString = button.getAttribute("data-detail");
-
-            let parsedData;
-            try {
-                parsedData = JSON.parse(jsonString);
-            } catch (e) {
-                console.error("Gagal parsing data:", e);
-                return;
-            }
-
-            const tbody = document.getElementById("produkTableBody");
-            tbody.innerHTML = "";
-            let subtotal = 0;
-
-            for (let i = 0; i < parsedData.Produk.length; i++) {
-                const nama = parsedData.Produk[i];
-                const jumlah = parsedData.Stok[i] ?? 0;
-                const satuan = parsedData.Satuan[i] ?? '-';
-                const expired = parsedData.TanggalExpired[i] ?? '-';
-                const harga = parsedData.HargaSatuan[i] ?? 0;
-                const total = parsedData.TotalHarga[i] ?? (jumlah * harga);
-
-                subtotal += total;
-
-                const row = document.createElement("tr");
-                row.innerHTML = `
-                    <td>${nama}</td>
-                    <td>${jumlah}</td>
-                    <td>${satuan}</td>
-                    <td>${expired}</td>
-                    <td>Rp ${harga.toLocaleString('id-ID')}</td>
-                    <td>Rp ${total.toLocaleString('id-ID')}</td>
-                `;
-                tbody.appendChild(row);
-            }
-
-            document.getElementById("subtotalHarga").innerHTML = `<strong>Rp ${subtotal.toLocaleString('id-ID')}</strong>`;
-
-            const modal = document.getElementById("detailModal");
-            modal.classList.add("show");
-            modal.style.display = "block";
-        }
-
-        function closeModal() {
-            const modal = document.getElementById("detailModal");
-            modal.classList.remove("show");
-            modal.style.display = "none";
-        }
-
-        window.onclick = function (event) {
-            const modal = document.getElementById("detailModal");
-            if (event.target == modal) {
-                closeModal();
-            }
-        }
-
-        function deleteNotification(id) {
-            if (!confirm("Yakin ingin menghapus notifikasi ini?")) return;
-
-            fetch('/NotifikasiOwner/DeleteNotification/' + id, {
-                method: 'DELETE',
-                headers: {
-                    'RequestVerificationToken': getAntiForgeryToken()
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    const notifDiv = document.querySelector(`.notification-item[data-id='${id}']`);
-                    if (notifDiv) notifDiv.remove();
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Sukses',
-                        text: 'Notifikasi berhasil dihapus.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Gagal menghapus notifikasi.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                }
-            })
-            .catch(error => {
-                console.error("Error:", error);
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Terjadi kesalahan saat menghapus notifikasi.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            });
-        }
-
-        function getAntiForgeryToken() {
-            const tokenElement = document.querySelector('input[name="__RequestVerificationToken"]');
-            return tokenElement ? tokenElement.value : '';
-        }
-
-        function konfirmasiPembelian() {
-            if (!currentNotifId) return Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Notifikasi tidak valid.',
-                timer: 2000,
-                showConfirmButton: false
-            });
-
-            fetch(`/NotifikasiOwner/KonfirmasiPembelian/${currentNotifId}`, {
-                method: 'POST',
-                headers: {
-                    'RequestVerificationToken': getAntiForgeryToken()
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    closeModal();
-                    removeNotificationById(currentNotifId);
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Pembelian berhasil dikonfirmasi.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Gagal mengonfirmasi pembelian.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                }
-            })
-            .catch(() => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Terjadi kesalahan saat mengonfirmasi pembelian.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            });
-        }
-
-        function tolakPembelian() {
-            if (!currentNotifId) return Swal.fire({
-                icon: 'error',
-                title: 'Error',
-                text: 'Notifikasi tidak valid.',
-                timer: 2000,
-                showConfirmButton: false
-            });
-
-            fetch(`/Notifikasi/TolakPembelian/${currentNotifId}`, {
-                method: 'POST',
-                headers: {
-                    'RequestVerificationToken': getAntiForgeryToken()
-                }
-            })
-            .then(response => {
-                if (response.ok) {
-                    closeModal();
-                    removeNotificationById(currentNotifId);
-                    Swal.fire({
-                        icon: 'success',
-                        title: 'Berhasil',
-                        text: 'Pembelian berhasil ditolak.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                } else {
-                    Swal.fire({
-                        icon: 'error',
-                        title: 'Error',
-                        text: 'Gagal menolak pembelian.',
-                        timer: 2000,
-                        showConfirmButton: false
-                    });
-                }
-            })
-            .catch(() => {
-                Swal.fire({
-                    icon: 'error',
-                    title: 'Error',
-                    text: 'Terjadi kesalahan saat menolak pembelian.',
-                    timer: 2000,
-                    showConfirmButton: false
-                });
-            });
-        }
-
-        function removeNotificationById(id) {
-            const notifDiv = document.querySelector(`.notification-item[data-id='${id}']`);
-            if (notifDiv) notifDiv.remove();
-        }
-    </script>
+    <script src="~/js/notifikasiowner.js"></script>
 </body>
 </html>
