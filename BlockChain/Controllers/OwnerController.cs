@@ -68,7 +68,8 @@ namespace BlockChain.Controllers
                 .GroupBy(p => p.Produk.Nama)
                 .Select(g => new {
                     NamaProduk = g.Key,
-                    Total = g.Sum(x => x.JumlahDigunakan)
+                    Total = g.Sum(x => x.JumlahDigunakan),
+                    Satuan = g.Select(x => x.Produk.Satuan).FirstOrDefault()
                 })
                 .ToList();
             Console.WriteLine("Jumlah Data:" + data.Count);

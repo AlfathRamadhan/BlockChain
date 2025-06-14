@@ -10,52 +10,37 @@ namespace BlockChain.Models
         public int Id { get; set; }
 
         [Required]
-        public string Username { get; set; }
+        public required string Username { get; set; }
+
+        [Required]
+        public required string KataSandi { get; set; }
+
+        [Required]
+        public required string Role { get; set; }
 
         public string? NamaToko { get; set; }
-
-        [EmailAddress]
         public string? Email { get; set; }
-
-        [Phone]
         public string? NoHp { get; set; }
-
-        [Required]
-        public string KataSandi { get; set; }
-
-        [Required]
-        public string Role { get; set; }
-
         public string? Kategori { get; set; }
         public string? LogoPath { get; set; }
 
-        // Profil tambahan:
-
-        [MaxLength(100)]
         public string? NamaLengkap { get; set; }
-
-        [MaxLength(250)]
         public string? Alamat { get; set; }
-
-        [MaxLength(500)]
         public string? Deskripsi { get; set; }
-
-        [MaxLength(50)]
         public string? NoRekening { get; set; }
 
         [NotMapped]
-        public IFormFile LogoFile { get; set; } // Tambahan properti untuk upload
+        public IFormFile? LogoFile { get; set; }
 
         [NotMapped]
-        public string PasswordBaru { get; set; }
+        public string? PasswordBaru { get; set; }
+
         public string? Bank { get; set; }
-        public bool IsVerified { get; set; } = false; // default: belum diverifikasi
+        public bool IsVerified { get; set; } = false;
 
-
-        public ICollection<Notifikasi> NotifikasiList { get; set; }
-
-        public ICollection<Inventaris> InventarisList { get; set; }
-        public ICollection<TransaksiKeuangan> TransaksiKeuangan { get; set; }
+        public ICollection<Notifikasi> NotifikasiList { get; set; } = new List<Notifikasi>();
+        public ICollection<Inventaris> InventarisList { get; set; } = new List<Inventaris>();
+        public ICollection<TransaksiKeuangan> TransaksiKeuangan { get; set; } = new List<TransaksiKeuangan>();
 
     }
 }

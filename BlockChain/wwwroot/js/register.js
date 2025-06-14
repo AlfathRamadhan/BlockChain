@@ -6,6 +6,33 @@ function validateEmail(email) {
     return regex.test(email);
 }
 
+function validatePassword(password) {
+    const regex = /^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?":{}|<>]).{8,}$/;
+    return regex.test(password);
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+    const form = document.querySelector('form');
+    const passwordInput = document.querySelector('input[name="KataSandi"]');
+
+    form.addEventListener('submit', function (event) {
+        // Validasi email
+        const emailInput = document.getElementById('email');
+        if (!validateEmail(emailInput.value)) {
+            event.preventDefault();
+            document.getElementById('emailError').textContent = 'Hanya email dengan domain @gmail.com yang diterima.';
+            return;
+        }
+
+        // Validasi password
+        if (!validatePassword(passwordInput.value)) {
+            event.preventDefault();
+            alert("Password harus minimal 8 karakter dan mengandung huruf kapital, angka, dan karakter spesial (misal: !@#?).");
+        }
+    });
+});
+
+
 // Event listener ketika dokumen sudah siap
 document.addEventListener('DOMContentLoaded', function () {
     const form = document.querySelector('form');

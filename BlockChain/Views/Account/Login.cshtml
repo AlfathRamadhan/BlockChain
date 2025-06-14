@@ -20,13 +20,23 @@
             <div class="login-right">
                 <h2 class="login-title">LOGIN</h2>
 
-                <!-- Menampilkan pesan kesalahan jika ada -->
                 @if (ViewBag.Error != null)
                 {
                     <div class="alert alert-danger">
                         @ViewBag.Error
                     </div>
                 }
+
+                @if (!ViewData.ModelState.IsValid)
+                {
+                    foreach (var error in ViewData.ModelState.Values.SelectMany(v => v.Errors))
+                    {
+                        <div class="alert alert-danger">
+                            @error.ErrorMessage
+                        </div>
+                    }
+                }
+
 
                 <form method="post" asp-controller="Account" asp-action="Login">
                     <div class="input-group">
@@ -47,5 +57,30 @@
             </div>
         </div>
     </div>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+            @if ((TempData["RegisterSuccess"] as bool?) == true)
+            {
+                    <text>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Pendaftaran Berhasil!',
+                        text: 'Silakan login menggunakan akun Anda.',
+                    });
+                    </text>
+            }
+            else if ((TempData["ResetPasswordSuccess"] as bool?) == true)
+            {
+                    <text>
+                    Swal.fire({
+                        icon: 'success',
+                        title: 'Password Berhasil Direset!',
+                        text: 'Silakan login dengan password baru Anda.',
+                    });
+                    </text>
+            }
+    </script>
+
 </body>
 </html>

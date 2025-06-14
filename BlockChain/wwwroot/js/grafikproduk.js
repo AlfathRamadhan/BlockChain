@@ -1,15 +1,19 @@
 ﻿let chart;
+const bulanNames = [
+    "Januari", "Februari", "Maret", "April",
+    "Mei", "Juni", "Juli", "Agustus",
+    "September", "Oktober", "November", "Desember"
+];
 
 function loadChart(tahun, bulan) {
     fetch(`/Owner/DataPemakaianProduk?tahun=${tahun}&bulan=${bulan}`)
         .then(res => res.json())
         .then(data => {
-            const labels = data.map(d => d.namaProduk); // sesuaikan nama properti
-            const values = data.map(d => d.total);      // sesuaikan nama properti
+            const labels = data.map(d => d.namaProduk);
+            const values = data.map(d => d.total);
+            const satuan = data.map(d => d.satuan); // ambil satuan
 
-            if (chart) {
-                chart.destroy();
-            }
+            if (chart) chart.destroy();
 
             const ctx = document.getElementById("chartPemakaian").getContext("2d");
             chart = new Chart(ctx, {
@@ -29,71 +33,59 @@ function loadChart(tahun, bulan) {
                         title: {
                             display: true,
                             text: 'Pemakaian Produk Bulanan'
+                        },
+                        datalabels: {
+                            color: '#fff',
+                            font: {
+                                weight: 'bold'
+                            },
+                            formatter: function (value, context) {
+                                return `${value} ${satuan[context.dataIndex]}`;
+                            },
+                            anchor: 'center',
+                            align: 'center'
                         }
                     }
-                }
+                },
+                plugins: [ChartDataLabels]
             });
-        });
+        })
+
 }
 
-// default tahun dan bulan saat load
-document.addEventListener("DOMContentLoaded", () => {
-    const tahun = parseInt(document.getElementById("tahunTampil").innerText);
-    const bulanIndex = parseInt(document.getElementById("bulanTampil").dataset.bulanIndex || new Date().getMonth());
-    loadChart(tahun, bulanIndex + 1);
-});
-
-// navigasi bulan
-document.querySelectorAll("#bulanSelector button").forEach((btn, idx) => {
-    btn.dataset.bulanIndex = idx;
-    btn.addEventListener("click", () => {
-        document.querySelectorAll("#bulanSelector button").forEach(b => b.classList.remove("active"));
-        btn.classList.add("active");
-
-        const tahun = parseInt(document.getElementById("tahunTampil").innerText);
-        loadChart(tahun, idx + 1);
-    });
-});
-
-// navigasi tahun
-document.getElementById("prevTahun").addEventListener("click", () => {
-    const tahunSpan = document.getElementById("tahunTampil");
-    tahunSpan.innerText = parseInt(tahunSpan.innerText) - 1;
-    refreshChart();
-});
-
-document.getElementById("nextTahun").addEventListener("click", () => {
-    const tahunSpan = document.getElementById("tahunTampil");
-    tahunSpan.innerText = parseInt(tahunSpan.innerText) + 1;
-    refreshChart();
-});
-
 function refreshChart() {
-    const tahun = parseInt(document.getElementById("tahunTampil").innerText);
-    const bulan = parseInt(document.getElementById("bulanTampil").dataset.bulanIndex) + 1;
+    const tahun = parseInt(document.getElementById("selectTahun").value);
+    const bulan = parseInt(document.getElementById("selectBulan").value);
     loadChart(tahun, bulan);
 }
 
-const bulanNames = [
-    "Januari", "Februari", "Maret", "April",
-    "Mei", "Juni", "Juli", "Agustus",
-    "September", "Oktober", "November", "Desember"
-];
+function initDropdowns() {
+    const tahunNow = new Date().getFullYear();
+    const bulanNow = new Date().getMonth(); // 0-based
 
-document.getElementById("prevBulan").addEventListener("click", () => {
-    const bulanSpan = document.getElementById("bulanTampil");
-    let index = parseInt(bulanSpan.dataset.bulanIndex);
-    index = (index - 1 + 12) % 12;
-    bulanSpan.dataset.bulanIndex = index;
-    bulanSpan.innerText = bulanNames[index];
-    refreshChart();
-});
+    const tahunSelect = document.getElementById("selectTahun");
+    for (let i = tahunNow - 5; i <= tahunNow + 5; i++) {
+        const option = document.createElement("option");
+        option.value = i;
+        option.textContent = i;
+        if (i === tahunNow) option.selected = true;
+        tahunSelect.appendChild(option);
+    }
 
-document.getElementById("nextBulan").addEventListener("click", () => {
-    const bulanSpan = document.getElementById("bulanTampil");
-    let index = parseInt(bulanSpan.dataset.bulanIndex);
-    index = (index + 1) % 12;
-    bulanSpan.dataset.bulanIndex = index;
-    bulanSpan.innerText = bulanNames[index];
-    refreshChart();
-});
+    const bulanSelect = document.getElementById("selectBulan");
+    bulanNames.forEach((name, index) => {
+        const option = document.createElement("option");
+        option.value = index + 1;
+        option.textContent = name;
+        if (index === bulanNow) option.selected = true;
+        bulanSelect.appendChild(option);
+    });
+
+    tahunSelect.addEventListener("change", refreshChart);
+    bulanSelect.addEventListener("change", refreshChart);
+
+    // Load chart pertama kali
+    loadChart(tahunNow, bulanNow + 1);
+}
+
+document.addEventListener("DOMContentLoaded", initDropdowns);

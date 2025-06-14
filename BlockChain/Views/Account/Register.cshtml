@@ -10,13 +10,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Register - Cookies</title>
     <link rel="stylesheet" href="~/css/register.css" asp-append-version="true">
-    <style>
-        .error-message {
-            color: red;
-            font-size: 12px;
-            margin-top: 4px;
-        }
-    </style>
 </head>
 <body>
     <div class="login-container">
@@ -53,8 +46,8 @@
                     <div class="input-group select-group">
                         <select asp-for="Kategori" class="form-control">
                             <option value="">Pilih Kategori</option>
-                            <option value="Bahan Makanan">Bahan Makanan</option>
-                            <option value="Alat Makan">Alat Makan</option>
+                            <option value="Bumbu Masak">Bumbu Masak</option>
+                            <option value="Sembako">Sembako</option>
                         </select>
                         <span asp-validation-for="Kategori" class="error-message"></span>
                     </div>
@@ -71,6 +64,10 @@
                     </div>
 
                     <button type="submit" class="login-button">DAFTAR</button>
+
+                    <div class="back-to-login">
+                        <a href="/Account/Login">Kembali ke halaman login</a>
+                    </div>
                 </form>
             </div>
         </div>
@@ -82,5 +79,8 @@
     <script src="https://cdn.jsdelivr.net/npm/jquery-validation-unobtrusive@3.2.12/jquery.validate.unobtrusive.min.js"></script>
 
     <script src="~/js/register.js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
 </body>
 </html>

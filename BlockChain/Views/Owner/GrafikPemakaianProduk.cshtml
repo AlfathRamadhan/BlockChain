@@ -7,7 +7,7 @@
 <html lang="id">
 <head>
     <meta charset="UTF-8">
-    <title>Owner - Dashboard Grafik Pemakaian</title>
+    <title>Grafik Pemakaian Produk</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="stylesheet" href="~/css/Grafik.css" asp-append-version="true" />
@@ -20,24 +20,19 @@
     <div class="dashboard-wrapper">
         <div class="main-content">
             <h2 class="title" style="color: white; font-weight: bold; text-align: center;">Total Pemakaian Produk</h2>
-            <p style="text-align: center; color: white;">Total Pemakaian Bulan Ini</p>
+            <div class="dropdown-container" style="display: flex; justify-content: center; gap: 20px; margin-bottom: 20px;">
+                <div>
+                    <label for="selectTahun" style="color: white;">Tahun:</label>
+                    <select id="selectTahun" class="highlight-brown"></select>
+                </div>
+                <div>
+                    <label for="selectBulan" style="color: white;">Bulan:</label>
+                    <select id="selectBulan" class="highlight-brown"></select>
+                </div>
+            </div>
+
 
             <div class="grafik-container">
-
-                <div class="selector-container">
-                    <div class="tahun-selector">
-                        <button id="prevTahun">←</button>
-                        <span id="tahunTampil" class="highlight-brown">2025</span>
-                        <button id="nextTahun">→</button>
-                    </div>
-
-                    <div class="bulan-selector" id="bulanSelector">
-                        <button id="prevBulan">←</button>
-                        <span id="bulanTampil" data-bulan-index="3" class="highlight-brown" >April</span>
-                        <button id="nextBulan">→</button>
-                    </div>
-                </div>
-
                 <div class="chart-wrapper">
                     <canvas id="chartPemakaian" height="150"></canvas>
                 </div>
@@ -46,7 +41,8 @@
     </div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="~/js/grafikproduk.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels@2"></script>
+    <script src="~/js/grafikproduk.js" asp-append-version="true"></script>
 
 </body>
 </html>

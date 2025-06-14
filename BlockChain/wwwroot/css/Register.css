@@ -4,16 +4,19 @@ body {
     background-color: #B99A81;
     display: flex;
     justify-content: center;
-    align-items: center;
-    height: 100vh;
+    align-items: flex-start;
+    min-height: 100vh;
     margin: 0;
+    padding: 40px 20px;
+    box-sizing: border-box;
+
 }
 
 /* Kontainer utama */
 .login-container {
     display: flex;
     justify-content: center;
-    align-items: center;
+    align-items: flex-start;
     width: 100%;
     padding-top: 40px;
     padding-bottom: 40px;
@@ -69,9 +72,25 @@ body {
 .input-group,
 .select-group,
 .file-group {
-    margin-bottom: 8px; /* dari sebelumnya 10px atau 15px */
+    width: 100%;
+    margin-bottom: 18px; /* tambah jarak antar grup */
+    display: flex;
+    flex-direction: column; /* susun input dan error vertikal */
+    align-items: flex-start; /* error rata kiri */
 }
 
+    .input-group input,
+    .select-group select,
+    .file-group input {
+        width: 100%;
+        max-width: 600px;
+        padding: 12px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        background-color: #5c3b24;
+        font-size: 14px;
+        box-sizing: border-box;
+    }
 
 /* Input */
 .input-group {
@@ -99,18 +118,12 @@ body {
 }
 
     .select-group select {
-        width: 100%;
-        max-width: 600px;
-        padding: 12px;
-        border-radius: 5px;
-        border: 1px solid #ccc;
-        background-color: #F5F1E3;
-        font-size: 14px;
         appearance: none; /* Optional: Hilangkan default panah browser */
         background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' fill='%23333' class='bi bi-caret-down-fill' viewBox='0 0 16 16'%3E%3Cpath d='M7.247 11.14l-4.796-5.481C1.885 5.253 2.342 4.5 3.058 4.5h9.884c.716 0 1.173.753.607 1.159l-4.796 5.481a1 1 0 0 1-1.506 0z'/%3E%3C/svg%3E");
         background-repeat: no-repeat;
-        background-position: right 12px center; /* ⬅️ Geser panah sedikit ke kiri */
+        background-position: right 12px center;
         background-size: 16px 16px;
+        background-color: #F5F1E3;
     }
 
 /* Styling file upload */
@@ -134,6 +147,22 @@ body {
         border-radius: 5px;
         border: 1px solid #ccc;
         background-color: #F5F1E3;
+    }
+
+.back-to-login {
+    margin-top: 15px;
+    text-align: center;
+}
+
+    .back-to-login a {
+        color: #B99A81;
+        text-decoration: none;
+        font-size: 14px;
+        font-weight: bold;
+    }
+
+    .back-to-login a:hover {
+        text-decoration: underline;
     }
 
 /* Tombol login */
@@ -161,11 +190,10 @@ body {
 .error-message {
     color: red;
     font-size: 12px;
-    text-align: left;
-    display: block;
-    margin-top: 2px;
-    margin-bottom: 6px;
+    margin-top: 4px;
+    margin-left: 4px;
 }
+
 
 
 @media (max-width: 768px) {
@@ -227,7 +255,8 @@ body {
     }
 
     .select-group select {
-        width: 109% !important ; 
+        width: 100% !important ; 
+        max-width: 600px;
         padding: 12px 16px;
         font-size: 14px;
         border-radius: 5px;
@@ -260,15 +289,17 @@ body {
         .select-group select,
         .file-group input {
             width: 100%;
+            max-width: 600px;
             padding: 12px;
             font-size: 14px;
             border-radius: 5px;
             border: 1px solid #ccc;
             background-color: #F5F1E3;
+            box-sizing:border-box;
         }
 
-        .file-group label,
-        .error-message {
+        .file-group label
+         {
             width: 100%;
             font-size: 13px;
             color: #555;
@@ -292,6 +323,29 @@ body {
         .login-button:hover {
             background-color: #A88B72;
         }
+
+    .back-to-login {
+        margin-top: 15px;
+        text-align: center;
+    }
+
+        .back-to-login a {
+            color: #B99A81;
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: bold;
+        }
+
+            .back-to-login a:hover {
+                text-decoration: underline;
+            }
+    .error-message {
+        color: red;
+        font-size: 12px;
+        margin-top: 4px;
+        margin-left: 4px;
+    }
+
 }
 
 

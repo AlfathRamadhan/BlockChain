@@ -28,21 +28,38 @@ namespace BlockChain.Controllers
         [HttpGet]
         public IActionResult Login()
         {
-            if (!string.IsNullOrEmpty(HttpContext.Session.GetString("Username")))
+            var role = HttpContext.Session.GetString("Role");
+
+            // Jika pengguna sudah login, langsung arahkan ke dashboard sesuai role
+            if (!string.IsNullOrEmpty(role))
             {
-                return RedirectToAction("Dashboard", "Owner");
+                return role switch
+                {
+                    "Owner" => RedirectToAction("Dashboard", "Owner"),
+                    "Gudang" => RedirectToAction("DashboardGudang", "DashboardGudang"),
+                    "Distributor" => RedirectToAction("DashboardDistributor", "DashboardDistributor"),
+                    "Keuangan" => RedirectToAction("Index", "DashboardKeuangan"),
+                    _ => RedirectToAction("Index", "Home")
+                };
             }
+
+            // Jika belum login, tampilkan halaman login
             return View();
         }
+
 
         // POST: Proses Login
         [HttpPost]
         public async Task<IActionResult> Login(string Username, string Password)
         {
-            Username = Username?.Trim().ToLower();
+            if (string.IsNullOrWhiteSpace(Username))
+            {
+                ViewBag.Error = "Username wajib diisi.";
+                return View();
+            }
 
             var user = await _context.Users
-                .FirstOrDefaultAsync(u => u.Username.ToLower() == Username);
+                .FirstOrDefaultAsync(u => u.Username != null && u.Username.ToLower() == Username);
 
             if (user == null)
             {
@@ -60,7 +77,7 @@ namespace BlockChain.Controllers
 
             if (!user.IsVerified && user.Role == "Distributor")
             {
-                ModelState.AddModelError("", "Akun Anda belum diverifikasi oleh Owner.");
+                ModelState.AddModelError("", "Akun Anda belum diverifikasi");
                 return View();
             }
 
@@ -94,7 +111,6 @@ namespace BlockChain.Controllers
         }
 
 
-
         // GET: Halaman Register
         [HttpGet]
         public IActionResult Register()
@@ -104,70 +120,87 @@ namespace BlockChain.Controllers
 
 
         [HttpPost]
-public async Task<IActionResult> Register(RegisterViewModel model)
-{
-    if (!ModelState.IsValid)
-    {
-        return View(model);
-    }
-
-    // Validasi NamaToko wajib karena default role = Distributor
-    if (string.IsNullOrWhiteSpace(model.NamaToko))
-    {
-        ModelState.AddModelError("NamaToko", "Nama Toko wajib diisi.");
-        return View(model);
-    }
-
-    // Cek duplikasi Username
-    var existingUserByUsername = await _context.Users
-        .FirstOrDefaultAsync(u => u.Username.ToLower() == model.Username.ToLower());
-    if (existingUserByUsername != null)
-    {
-        ModelState.AddModelError("Username", "Username sudah digunakan.");
-        return View(model);
-    }
-
-    // Cek duplikasi Email
-    var existingUserByEmail = await _context.Users
-        .FirstOrDefaultAsync(u => u.Email.ToLower() == model.Email.ToLower());
-    if (existingUserByEmail != null)
-    {
-        ModelState.AddModelError("Email", "Email sudah digunakan.");
-        return View(model);
-    }
-
-    // Upload logo
-    string uniqueFileName = null;
-    if (model.LogoFile != null)
-    {
-        string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "logos");
-        Directory.CreateDirectory(uploadsFolder);
-        uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(model.LogoFile.FileName);
-        string filePath = Path.Combine(uploadsFolder, uniqueFileName);
-        using (var fileStream = new FileStream(filePath, FileMode.Create))
+        public async Task<IActionResult> Register(RegisterViewModel model)
         {
-            await model.LogoFile.CopyToAsync(fileStream);
+            if (!ModelState.IsValid)
+            {
+                return View(model);
+            }
+
+            // Validasi password kuat
+            var password = model.KataSandi;
+            var passwordRegex = new System.Text.RegularExpressions.Regex(@"^(?=.*[A-Z])(?=.*\d)(?=.*[!@#$%^&*(),.?""':{}|<>]).{8,}$");
+
+            if (!passwordRegex.IsMatch(password))
+            {
+                ModelState.AddModelError("KataSandi", "Password harus minimal 8 karakter dan mengandung huruf kapital, angka, dan karakter spesial.");
+                return View(model);
+            }
+
+
+            // Validasi NamaToko wajib karena default role = Distributor
+            if (string.IsNullOrWhiteSpace(model.NamaToko))
+            {
+                ModelState.AddModelError("NamaToko", "Nama Toko wajib diisi.");
+                return View(model);
+            }
+
+            // Cek duplikasi Username
+            var existingUserByUsername = await _context.Users
+                .FirstOrDefaultAsync(u => u.Username.ToLower() == model.Username.ToLower());
+            if (existingUserByUsername != null)
+            {
+                ModelState.AddModelError("Username", "Username sudah digunakan.");
+                return View(model);
+            }
+
+            // Cek duplikasi Email
+            var emailToCheck = model.Email?.ToLower();
+
+            var existingUserByEmail = await _context.Users
+                .FirstOrDefaultAsync(u => u.Email != null && u.Email.ToLower() == emailToCheck);
+
+            if (existingUserByEmail != null)
+            {
+                ModelState.AddModelError("Email", "Email sudah digunakan.");
+                return View(model);
+            }
+
+            // Upload logo
+            string uniqueFileName = string.Empty; // hindari null
+            if (model.LogoFile != null)
+            {
+                string uploadsFolder = Path.Combine(_webHostEnvironment.WebRootPath, "images", "logos");
+                Directory.CreateDirectory(uploadsFolder);
+                uniqueFileName = Guid.NewGuid().ToString() + "_" + Path.GetFileName(model.LogoFile.FileName);
+                string filePath = Path.Combine(uploadsFolder, uniqueFileName);
+                using (var fileStream = new FileStream(filePath, FileMode.Create))
+                {
+                    await model.LogoFile.CopyToAsync(fileStream);
+                }
+            }
+
+            var user = new User
+            {
+                NamaToko = model.NamaToko,
+                Username = model.Username,
+                Email = model.Email,
+                NoHp = model.NoHp,
+                Kategori = model.Kategori,
+                LogoPath = uniqueFileName,
+                Role = "Distributor",
+                KataSandi = "" // nilai sementara, akan di-overwrite setelah ini
+            };
+
+            user.KataSandi = _passwordHasher.HashPassword(user, model.KataSandi);
+
+
+            _context.Users.Add(user);
+            await _context.SaveChangesAsync();
+
+            TempData["RegisterSuccess"] = true;
+            return RedirectToAction("Login");
         }
-    }
-
-    // Simpan ke tabel Users
-    var user = new User
-    {
-        NamaToko = model.NamaToko,
-        Username = model.Username,
-        Email = model.Email,
-        NoHp = model.NoHp,
-        Kategori = model.Kategori,
-        LogoPath = uniqueFileName,
-        KataSandi = _passwordHasher.HashPassword(null, model.KataSandi),
-        Role = "Distributor" // default role
-    };
-
-    _context.Users.Add(user);
-    await _context.SaveChangesAsync();
-
-    return RedirectToAction("Login");
-}
 
         public IActionResult Success()
         {
@@ -181,7 +214,7 @@ public async Task<IActionResult> Register(RegisterViewModel model)
             return View();
         }
         [HttpPost]
-        public async Task<IActionResult> ForgotPassword(string username, string email, string noHp)
+        public async Task<IActionResult> ForgotPassword(string? username, string? email, string? noHp)
         {
             if (string.IsNullOrWhiteSpace(username) || (string.IsNullOrWhiteSpace(email) && string.IsNullOrWhiteSpace(noHp)))
             {
@@ -189,13 +222,13 @@ public async Task<IActionResult> Register(RegisterViewModel model)
                 return View();
             }
 
-            username = username.Trim().ToLower();
-            email = email?.Trim().ToLower();
-            noHp = noHp?.Trim();
+            username = (username ?? "").Trim().ToLower();
+            email = string.IsNullOrWhiteSpace(email) ? null : email.Trim().ToLower();
+            noHp = string.IsNullOrWhiteSpace(noHp) ? null : noHp.Trim();
 
             var user = await _context.Users
                 .FirstOrDefaultAsync(u => u.Username.ToLower() == username &&
-                    (u.Email.ToLower() == email || u.NoHp == noHp));
+                    ((email != null && u.Email != null && u.Email.ToLower() == email) || u.NoHp == noHp));
 
             if (user == null)
             {
@@ -205,7 +238,14 @@ public async Task<IActionResult> Register(RegisterViewModel model)
 
             string verificationCode = GenerateVerificationCode();
 
-            string contactInfo = !string.IsNullOrEmpty(email) ? email : user.Email;
+            // Gunakan email dari user jika parameter email tidak diisi
+            string? contactInfo = !string.IsNullOrEmpty(email) ? email : user.Email;
+
+            if (string.IsNullOrEmpty(contactInfo))
+            {
+                ViewBag.Error = "Tidak ada email valid yang tersedia untuk mengirim kode.";
+                return View();
+            }
 
             string subject = "Kode Verifikasi Reset Password";
             string message = $@"
@@ -220,12 +260,14 @@ public async Task<IActionResult> Register(RegisterViewModel model)
 
             await _emailSender.SendEmailAsync(contactInfo, subject, message);
 
+            // Simpan ke session (pastikan tidak null)
             HttpContext.Session.SetString("VerificationCode", verificationCode);
-            HttpContext.Session.SetString("Email", user.Email);
-            HttpContext.Session.SetString("Username", user.Username);
+            HttpContext.Session.SetString("Email", user.Email ?? ""); // fallback ke string kosong
+            HttpContext.Session.SetString("Username", user.Username ?? "");
 
             return RedirectToAction("VerifyCode");
         }
+
         private string GenerateVerificationCode()
         {
             // Anda bisa menggunakan logika untuk membuat kode verifikasi secara acak
@@ -252,7 +294,13 @@ public async Task<IActionResult> Register(RegisterViewModel model)
             Console.WriteLine($"Kode yang Dimasukkan: {code}");
 
             // Ambil kode verifikasi yang disimpan di session
-            string expectedCode = HttpContext.Session.GetString("VerificationCode");
+            string? expectedCode = HttpContext.Session.GetString("VerificationCode");
+
+            if (string.IsNullOrEmpty(expectedCode))
+            {
+                // misalnya redirect ke halaman verifikasi ulang atau tampilkan error
+                return RedirectToAction("ForgotPassword");
+            }
             Console.WriteLine($"Kode yang Diharapkan: {expectedCode}");
 
             if (code == expectedCode)
@@ -270,13 +318,20 @@ public async Task<IActionResult> Register(RegisterViewModel model)
         [HttpGet]
         public IActionResult ResetPassword()
         {
-            string email = HttpContext.Session.GetString("Email");
-            if (string.IsNullOrEmpty(email))
+            string? email = HttpContext.Session.GetString("Email");
+
+            if (string.IsNullOrWhiteSpace(email))
             {
                 return RedirectToAction("ForgotPassword");
             }
 
-            var model = new ResetPasswordViewModel { Email = email };
+            var model = new ResetPasswordViewModel
+            {
+                Email = email,
+                NewPassword = string.Empty,
+                ConfirmPassword = string.Empty
+            };
+
             return View(model);
         }
 
@@ -304,6 +359,7 @@ public async Task<IActionResult> Register(RegisterViewModel model)
             // Clear session setelah reset password untuk memastikan pengguna tidak otomatis login
             HttpContext.Session.Clear();
 
+            TempData["ResetPasswordSuccess"] = true;
             return RedirectToAction("Login");
         }
 
